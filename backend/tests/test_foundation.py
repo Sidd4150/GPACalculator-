@@ -2,13 +2,14 @@
 Test the Phase 1 foundation components.
 """
 
-import unittest
 import os
+import unittest
 from unittest.mock import patch
+
 from app.config import Settings
-from app.constants import GRADE_POINTS, NON_GPA_GRADES, ERROR_MESSAGES
-from app.services.validation import FileValidator
+from app.constants import ERROR_MESSAGES, GRADE_POINTS, NON_GPA_GRADES
 from app.exceptions import FileError, ValidationError
+from app.services.file_validator import FileValidator
 from app.utils.exception_handler import map_exception_to_http
 
 

@@ -1,20 +1,21 @@
 """
-Validation services for the GPA Calculator application.
+File validation for the GPA Calculator application.
 """
 
 from typing import Optional
-from fastapi import UploadFile
+
+from app.config import Settings
 from app.constants import (
-    SUPPORTED_FILE_EXTENSIONS,
-    SUPPORTED_MIME_TYPES,
     ERROR_MESSAGES,
     PDF_HEADER_SIGNATURE,
+    SUPPORTED_FILE_EXTENSIONS,
+    SUPPORTED_MIME_TYPES,
 )
-from app.config import Settings
 from app.exceptions import FileError, ValidationError
 from app.utils.logger import setup_logger
+from fastapi import UploadFile
 
-logger = setup_logger("validation")
+logger = setup_logger("file_validator")
 
 
 class FileValidator:
@@ -85,52 +86,7 @@ class FileValidator:
             )
 
 
-class RequestValidator:
-    """Handles HTTP request validation."""
-
-    def __init__(self, settings: Settings):
-        """Initialize validator with settings."""
-        self.settings = settings
-
-    def validate_request_size(
-        self, content_length: Optional[str], client_ip: str = "unknown"
-    ) -> None:
-        """
-        Validate incoming request size before processing.
-
-        Args:
-            content_length: Content-Length header value
-            client_ip: Client IP for logging
-
-        Raises:
-            FileError: If request exceeds size limits
-        """
-        if content_length:
-            try:
-                size = int(content_length)
-                if size > self.settings.max_file_size_bytes:
-                    logger.warning(
-                        "Request too large: %s bytes from %s", size, client_ip
-                    )
-                    raise FileError(
-                        f"Request entity too large. Maximum size is {self.settings.max_file_size_mb}MB.",
-                        f"Request size: {size} bytes",
-                    )
-            except ValueError as exc:
-                logger.warning(
-                    "Invalid Content-Length header: %s from %s",
-                    content_length,
-                    client_ip,
-                )
-                raise ValidationError("Invalid Content-Length header") from exc
-
-
 # Factory functions for dependency injection
 def create_file_validator(settings: Settings) -> FileValidator:
     """Create file validator instance."""
     return FileValidator(settings)
-
-
-def create_request_validator(settings: Settings) -> RequestValidator:
-    """Create request validator instance."""
-    return RequestValidator(settings)

@@ -24,7 +24,7 @@ Full-stack GPA calculator for parsing USF transcript PDFs and calculating GPA.
 │   │   ├── services/
 │   │   │   ├── parser.py      # PDF parsing logic
 │   │   │   ├── gpa_calculator.py  # GPA computation
-│   │   │   └── validation.py  # Input validation
+│   │   │   └── file_validator.py  # File validation
 │   │   ├── models/
 │   │   │   └── course.py      # Pydantic models
 │   │   ├── utils/
