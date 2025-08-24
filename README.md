@@ -75,7 +75,6 @@ Push to `main` branch - GitHub Actions will test and Render will deploy automati
 - `GET /health` - Health check
 - `POST /api/v1/upload` - Upload transcript PDF
 - `POST /api/v1/gpa` - Calculate GPA from course data
-- `GET /api/v1/health` - Detailed health check
 
 ---
 
