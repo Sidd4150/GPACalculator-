@@ -12,12 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the backend application
 COPY backend/ .
 
-# Expose port
-EXPOSE 8000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/api/v1/health || exit 1
+# Note: Port is dynamic (set via PORT env var in production, defaults to 8000 locally)
 
 # Run the application using the main.py logic for port handling
 CMD ["python", "-m", "app.main"]
