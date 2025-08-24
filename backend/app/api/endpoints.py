@@ -15,7 +15,7 @@ from app.services.gpa_calculator import GPACalculator
 from app.services.validation import FileValidator
 from app.config import get_settings, Settings
 from app.utils.logger import setup_logger
-from app.utils.exceptions import map_exception_to_http
+from app.utils.exception_handler import map_exception_to_http
 
 logger = setup_logger("api")
 

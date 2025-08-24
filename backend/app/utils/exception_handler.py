@@ -1,5 +1,6 @@
 """
 Exception handling utilities for API endpoints.
+Converts application exceptions to appropriate HTTP responses.
 """
 
 from fastapi import HTTPException, status
