@@ -30,7 +30,7 @@ python -m uvicorn app.main:app --reload
 
 **Your API will be available at:**
 - API Documentation: http://localhost:8000/docs
-- Health Check: http://localhost:8000/health
+- Health Check: http://localhost:8000/api/v1/health
 - Upload Endpoint: http://localhost:8000/api/v1/upload
 - GPA Endpoint: http://localhost:8000/api/v1/gpa
 
@@ -72,7 +72,7 @@ Push to `main` branch - GitHub Actions will test and Render will deploy automati
 **Production API Base URL:** `https://your-app-name.render.com`
 
 **Available Endpoints:**
-- `GET /health` - Health check
+- `GET /api/v1/health` - Health check
 - `POST /api/v1/upload` - Upload transcript PDF
 - `POST /api/v1/gpa` - Calculate GPA from course data
 
@@ -199,15 +199,14 @@ python -m pytest tests/ -v                # Run tests
 python -m black app tests                  # Format code
 ```
 
-### Environment Variables
+### Configuration
 
-**For local development (.env):**
-Most developers won't need to create a `.env` file - the defaults work fine. Only create one if you need custom settings.
+**Local development:** All settings have sensible defaults in `config.py`. No additional setup needed.
 
-**For production deployment:**
-Set these in your deployment platform:
+**Production deployment:** Set these environment variables in your deployment platform:
 - `ENVIRONMENT=production`
 - `CORS_ORIGINS=https://your-frontend-domain.com`
+- `PORT` (set automatically by deployment platform)
 
 ---
 
@@ -237,7 +236,6 @@ gpa-calculator/
 │   ├── app/                # FastAPI application
 │   ├── tests/             # Test suite (100 tests)
 │   └── requirements.txt   # Python dependencies
-├── .env.example           # Environment template
 ├── Dockerfile            # Container configuration
 ├── render.yaml           # Render deployment config
 └── .github/workflows/    # CI/CD pipeline
