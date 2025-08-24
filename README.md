@@ -4,8 +4,8 @@ A FastAPI backend service for parsing USF transcript PDFs and calculating GPA, w
 
 ## 🏗️ Project Architecture
 
-- **Backend**: FastAPI (Python) - this repository
-- **Frontend**: React (separate repository/developer)
+- **Backend**: FastAPI (Python)
+- **Frontend**: React (separate developer)
 - **Deployment**: Render (backend) + Frontend hosting platform
 - **API Version**: v1
 
@@ -20,8 +20,8 @@ A FastAPI backend service for parsing USF transcript PDFs and calculating GPA, w
 **Setup:**
 ```bash
 # Clone and set up the repository
-git clone https://github.com/your-username/gpa-calculator.git
-cd gpa-calculator/backend
+git clone https://github.com/your-username/GPACalculator-.git
+cd GPACalculator-/backend
 pip install -r requirements.txt
 
 # Run development server
@@ -68,7 +68,7 @@ Push to `main` branch - Render will automatically build using the Dockerfile.
 
 #### 4. Share API Details with Frontend Developer
 
-**Production API Base URL:** `https://your-app-name.render.com`
+**Production API Base URL:** `https://gpacalculator-qm9d.onrender.com`
 
 **Available Endpoints:**
 - `GET /api/v1/health` - Health check
@@ -118,7 +118,7 @@ The backend provides two main endpoints you'll need to integrate:
 - **Other**: Any static site hosting service
 
 **Update environment variables for production:**
-- Set `REACT_APP_API_BASE_URL` to your backend's Render URL
+- Set `REACT_APP_API_BASE_URL` to your `https://gpacalculator-qm9d.onrender.com`
 - Share your production domain with backend developer for CORS configuration
 
 ---
@@ -223,7 +223,7 @@ python -m black app tests                  # Format code
 
 ### Deployment
 - **Build fails**: Test build commands locally first
-- **Health check fails**: Verify `/health` endpoint works locally
+- **Health check fails**: Verify `api/v1/health` endpoint works locally
 
 ---
 

@@ -14,6 +14,7 @@ Full-stack GPA calculator for parsing USF transcript PDFs and calculating GPA.
 - Lint: `cd backend && pylint app/`
 
 ## Project Structure
+```
 /gpa-calculator/
 ├── backend/                    # FastAPI backend (your work)
 │   ├── app/
@@ -41,6 +42,7 @@ Full-stack GPA calculator for parsing USF transcript PDFs and calculating GPA.
 ├── frontend/                   # Future React frontend (teammate's work)
 ├── Dockerfile                 # Docker configuration for Render deployment
 └── README.md                  # Project documentation
+```
 
 ## USF Transcript Format Rules
 - Three main sections: TRANSFER CREDIT, INSTITUTION CREDIT, COURSES IN PROGRESS
