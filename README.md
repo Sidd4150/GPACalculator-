@@ -42,15 +42,12 @@ cd backend
 # Run all tests
 python -m pytest tests/ -v
 
-# Format code
-python -m black app tests
 ```
 
 #### 3. Deploy Backend to Production
 
 **Step 1: Prepare for deployment**
 - Ensure all tests pass
-- Verify code formatting
 
 **Step 2: Set up Render**
 1. Create account at [Render.com](https://render.com)
@@ -108,7 +105,7 @@ The backend provides two main endpoints you'll need to integrate:
 
 1. Start the backend server (see backend instructions above)
 2. Start your React development server
-3. Your frontend will connect to `http://localhost:8000`
+3. Your frontend will connect to the API at `http://localhost:8000`
 
 #### 4. Deploy Frontend to Production
 
