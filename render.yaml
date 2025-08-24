@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: gpa-calculator-backend
+    env: python
+    region: oregon
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    plan: free
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: CORS_ORIGINS
+        # Update this with your actual frontend domain when deployed
+        value: https://your-frontend-domain.com
+      # Uncomment and configure as needed:
+      # - key: MAX_FILE_SIZE_MB
+      #   value: 50
+      # - key: RATE_LIMIT_UPLOAD
+      #   value: 10
