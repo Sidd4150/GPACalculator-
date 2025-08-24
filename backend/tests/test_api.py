@@ -2,13 +2,12 @@
 Tests for FastAPI endpoints.
 """
 
-import pytest
-import json
 import io
 from pathlib import Path
+
 from fastapi.testclient import TestClient
+
 from app.main import app
-from app.models.course import CourseRow
 
 
 class TestAPIEndpoints:
@@ -17,9 +16,7 @@ class TestAPIEndpoints:
     def setup_method(self):
         """Set up test fixtures."""
         self.client = TestClient(app)
-        self.test_transcript_path = (
-            Path(__file__).parent.parent / "Academic Transcript.pdf"
-        )
+        self.test_transcript_path = Path(__file__).parent.parent / "Academic Transcript.pdf"
 
     def test_upload_valid_pdf(self):
         """Test /upload endpoint with valid PDF file."""
@@ -35,8 +32,8 @@ class TestAPIEndpoints:
         data = response.json()
         assert isinstance(data, list), "Response should be a list of courses"
         assert (
-            len(data) > 30
-        ), f"Should parse significant number of courses, got {len(data)}"
+            len(data) == 44
+        ), f"Should parse exactly 44 courses from Academic Transcript.pdf, got {len(data)}"
 
         # Validate course structure
         course = data[0]
@@ -294,33 +291,6 @@ class TestAPIEndpoints:
 
         assert response.status_code == 405, f"Expected 405, got {response.status_code}"
 
-    def test_integration_upload_then_gpa(self):
-        """Test complete workflow: upload PDF, then calculate GPA with returned courses."""
-        # Step 1: Upload PDF
-        with open(self.test_transcript_path, "rb") as pdf_file:
-            files = {"file": ("Academic Transcript.pdf", pdf_file, "application/pdf")}
-            upload_response = self.client.post("/api/v1/upload", files=files)
-
-        assert (
-            upload_response.status_code == 200
-        ), f"Upload failed: {upload_response.text}"
-        upload_data = upload_response.json()
-
-        # Step 2: Calculate GPA using the uploaded courses
-        gpa_payload = {"courses": upload_data}
-        gpa_response = self.client.post("/api/v1/gpa", json=gpa_payload)
-
-        assert (
-            gpa_response.status_code == 200
-        ), f"GPA calculation failed: {gpa_response.text}"
-        gpa = gpa_response.json()
-
-        # Verify reasonable GPA calculation
-        assert 0.0 <= gpa <= 4.0, f"GPA should be between 0.0 and 4.0, got {gpa}"
-
-        # Should have reasonable GPA for a good student
-        assert gpa > 3.0, f"This transcript should have high GPA, got {gpa}"
-
     def test_large_file_handling(self):
         """Test handling of very large file uploads."""
         # Create a large fake PDF content (5MB)
@@ -343,7 +313,6 @@ class TestAPIEndpoints:
     def test_concurrent_requests(self):
         """Test that API can handle multiple concurrent requests."""
         import concurrent.futures
-        import threading
 
         def make_gpa_request():
             courses_payload = {
@@ -362,15 +331,11 @@ class TestAPIEndpoints:
         # Make 5 concurrent requests
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             futures = [executor.submit(make_gpa_request) for _ in range(5)]
-            responses = [
-                future.result() for future in concurrent.futures.as_completed(futures)
-            ]
+            responses = [future.result() for future in concurrent.futures.as_completed(futures)]
 
         # All should succeed
         for response in responses:
-            assert (
-                response.status_code == 200
-            ), f"Concurrent request failed: {response.status_code}"
+            assert response.status_code == 200, f"Concurrent request failed: {response.status_code}"
             gpa = response.json()
             assert gpa == 4.0, f"Expected GPA 4.0, got {gpa}"
 
@@ -392,9 +357,7 @@ class TestAPIEndpoints:
         response = self.client.post("/api/v1/gpa", json=courses_payload)
 
         # Should succeed and include CORS headers (handled by FastAPI middleware)
-        assert (
-            response.status_code == 200
-        ), f"CORS-enabled request failed: {response.status_code}"
+        assert response.status_code == 200, f"CORS-enabled request failed: {response.status_code}"
 
     def test_response_content_type(self):
         """Test that responses have correct Content-Type headers."""

@@ -67,7 +67,7 @@ class CoursesRequest(BaseModel):
 @router.post("/upload")
 @limiter.limit(f"{get_cached_settings().rate_limit_upload}/minute")
 async def upload_transcript(
-    request: Request,
+    request: Request,  # pylint: disable=unused-argument
     file: UploadFile = File(...),
     file_validator: FileValidator = Depends(get_file_validator),
     parser: TranscriptParser = Depends(get_transcript_parser),
@@ -106,27 +106,23 @@ async def upload_transcript(
             try:
                 os.unlink(temp_path)
             except OSError as cleanup_error:
-                logger.warning(
-                    "Failed to cleanup temp file %s: %s", temp_path, cleanup_error
-                )
+                logger.warning("Failed to cleanup temp file %s: %s", temp_path, cleanup_error)
 
         # Convert courses to dictionaries for JSON response
         courses_dict = [course.model_dump() for course in courses]
 
-        logger.info(
-            "Successfully processed %d courses from %s", len(courses), file.filename
-        )
+        logger.info("Successfully processed %d courses from %s", len(courses), file.filename)
         return courses_dict
 
     except Exception as e:
         logger.error("Failed to process transcript %s: %s", file.filename, e)
-        raise map_exception_to_http(e)
+        raise map_exception_to_http(e) from e
 
 
 @router.post("/gpa")
 @limiter.limit(f"{get_cached_settings().rate_limit_gpa}/minute")
 def calculate_gpa(
-    request: Request,
+    request: Request,  # pylint: disable=unused-argument
     gpa_request: CoursesRequest,
     gpa_calculator: GPACalculator = Depends(get_gpa_calculator),
 ) -> float:
@@ -152,17 +148,16 @@ def calculate_gpa(
 
     except Exception as e:
         logger.error("Failed to calculate GPA: %s", e)
-        raise map_exception_to_http(e)
+        raise map_exception_to_http(e) from e
 
 
 @router.get("/health")
-@limiter.limit(f"{get_cached_settings().rate_limit_health}/minute")
-def health_check(request: Request) -> Dict[str, str]:
+def health_check() -> Dict[str, str]:
     """Health check endpoint."""
     settings = get_cached_settings()
     return {
         "status": "healthy",
         "service": "GPA Calculator API",
         "version": settings.app_version,
-        "environment": settings.environment
+        "environment": settings.environment,
     }

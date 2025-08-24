@@ -16,7 +16,7 @@ settings = get_settings()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_app: FastAPI):
     """Handle application lifespan events."""
     # Startup
     logger.info("GPA Calculator API starting up")
@@ -48,16 +48,6 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Include API routes with versioning
 app.include_router(router, prefix="/api/v1")
 
-# Root health endpoint for deployment services
-@app.get("/health")
-async def root_health_check():
-    """Root health check endpoint for deployment services."""
-    return {
-        "status": "healthy",
-        "service": "GPA Calculator API",
-        "version": settings.app_version
-    }
-
 
 # Application startup/shutdown events handled by lifespan context manager
 
@@ -66,6 +56,6 @@ if __name__ == "__main__":
     import uvicorn
     import os
 
-    # For local development only - production platforms handle port automatically
-    port = int(os.getenv("PORT", 8000))
+    # Use PORT from environment if set (production), otherwise use config default
+    port = int(os.getenv("PORT", str(settings.port)))
     uvicorn.run(app, host=settings.host, port=port)

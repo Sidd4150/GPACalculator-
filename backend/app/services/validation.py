@@ -29,9 +29,7 @@ class FileValidator:
         self._validate_filename(file.filename)
         self._validate_content_type(file.content_type)
 
-    def validate_file_content(
-        self, content: bytes, filename: Optional[str] = None
-    ) -> None:
+    def validate_file_content(self, content: bytes, filename: Optional[str] = None) -> None:
         """Validate file content after reading."""
         self._validate_file_size(len(content), filename)
         self._validate_pdf_content(content, filename)
@@ -51,9 +49,7 @@ class FileValidator:
 
     def _validate_content_type(self, content_type: Optional[str]) -> None:
         """Validate MIME type if provided."""
-        if content_type and not any(
-            content_type.startswith(mime) for mime in SUPPORTED_MIME_TYPES
-        ):
+        if content_type and not any(content_type.startswith(mime) for mime in SUPPORTED_MIME_TYPES):
             logger.warning("Invalid content type: %s", content_type)
             raise FileError(
                 ERROR_MESSAGES["INVALID_FILE_TYPE"],
@@ -73,9 +69,7 @@ class FileValidator:
                 f"File size: {size} bytes",
             )
 
-    def _validate_pdf_content(
-        self, content: bytes, filename: Optional[str] = None
-    ) -> None:
+    def _validate_pdf_content(self, content: bytes, filename: Optional[str] = None) -> None:
         """Validate PDF content structure."""
         if not content.startswith(PDF_HEADER_SIGNATURE):
             logger.warning("Invalid PDF header: %s", filename)
@@ -109,9 +103,7 @@ class RequestValidator:
             try:
                 size = int(content_length)
                 if size > self.settings.max_file_size_bytes:
-                    logger.warning(
-                        "Request too large: %s bytes from %s", size, client_ip
-                    )
+                    logger.warning("Request too large: %s bytes from %s", size, client_ip)
                     raise FileError(
                         f"Request entity too large. Maximum size is {self.settings.max_file_size_mb}MB.",
                         f"Request size: {size} bytes",

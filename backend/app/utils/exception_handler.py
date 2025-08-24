@@ -47,9 +47,8 @@ def _format_exception_message(exc: Exception, message_template: str) -> str:
     if hasattr(exc, "message"):
         # Our custom exceptions have .message attribute
         return message_template.format(message=exc.message)
-    elif "{message}" in message_template:
+    if "{message}" in message_template:
         # Standard exceptions use str(exc)
         return message_template.format(message=str(exc))
-    else:
-        # Template has no placeholder
-        return message_template
+    # Template has no placeholder
+    return message_template

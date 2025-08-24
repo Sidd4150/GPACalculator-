@@ -4,12 +4,12 @@ Test the Phase 1 foundation components.
 
 import unittest
 import os
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 from app.config import Settings
 from app.constants import GRADE_POINTS, NON_GPA_GRADES, ERROR_MESSAGES
 from app.services.validation import FileValidator
 from app.exceptions import FileError, ValidationError
-from app.api.endpoints import map_exception_to_http
+from app.utils.exception_handler import map_exception_to_http
 
 
 class TestConfiguration(unittest.TestCase):
@@ -71,9 +71,6 @@ class TestConstants(unittest.TestCase):
         self.assertTrue(len(ERROR_MESSAGES["NO_FILE"]) > 0)
 
 
-# Dependency injection tests removed since we simplified to use FastAPI's built-in DI
-
-
 class TestServices(unittest.TestCase):
     """Test service layer."""
 
@@ -82,14 +79,9 @@ class TestServices(unittest.TestCase):
         self.settings = Settings()
 
     def test_file_validation_service(self):
-        """Test file validation service."""
+        """Test file validation service exists and initializes."""
         service = FileValidator(self.settings)
-
-        # Test valid PDF file
-        # Updated to use FileValidator API
-
-        # Test invalid file type
-        # Tests moved to dedicated validation tests
+        self.assertIsNotNone(service)
 
     def test_file_size_validation(self):
         """Test file size validation."""
@@ -107,8 +99,6 @@ class TestServices(unittest.TestCase):
         # Test empty file
         with self.assertRaises(ValidationError):
             service.validate_file_content(b"", "empty.pdf")
-
-    # Rate limiting tests removed since we simplified rate limiting
 
     def test_file_validator_with_valid_pdf(self):
         """Test file validator with valid PDF."""
@@ -163,9 +153,7 @@ class TestServices(unittest.TestCase):
         exc = FileError("File size exceeds limit", "Size details")
         http_exc = map_exception_to_http(exc)
         self.assertEqual(http_exc.status_code, 413)
-        self.assertEqual(
-            http_exc.detail, "File processing error: File size exceeds limit"
-        )
+        self.assertEqual(http_exc.detail, "File processing error: File size exceeds limit")
 
 
 if __name__ == "__main__":

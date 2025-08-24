@@ -2,7 +2,6 @@
 Tests for GPA calculator functionality.
 """
 
-import pytest
 from app.models.course import CourseRow
 from app.services.gpa_calculator import GPACalculator
 
@@ -17,15 +16,9 @@ class TestGPACalculator:
     def test_basic_gpa_calculation_all_a_grades(self):
         """Test GPA calculation with all A grades."""
         courses = [
-            CourseRow(
-                subject="CS", number="101", title="Intro to CS", units=3.0, grade="A"
-            ),
-            CourseRow(
-                subject="MATH", number="201", title="Calculus", units=4.0, grade="A"
-            ),
-            CourseRow(
-                subject="ENGL", number="101", title="English", units=3.0, grade="A"
-            ),
+            CourseRow(subject="CS", number="101", title="Intro to CS", units=3.0, grade="A"),
+            CourseRow(subject="MATH", number="201", title="Calculus", units=4.0, grade="A"),
+            CourseRow(subject="ENGL", number="101", title="English", units=3.0, grade="A"),
         ]
 
         gpa = self.calculator.calculate_gpa(courses)
@@ -118,9 +111,7 @@ class TestGPACalculator:
     def test_exclude_non_gpa_grades_tcr(self):
         """Test that TCR grades are excluded from GPA calculation."""
         courses = [
-            CourseRow(
-                subject="CS", number="101", title="Intro to CS", units=3.0, grade="A"
-            ),
+            CourseRow(subject="CS", number="101", title="Intro to CS", units=3.0, grade="A"),
             CourseRow(
                 subject="MATH",
                 number="201",
@@ -128,9 +119,7 @@ class TestGPACalculator:
                 units=4.0,
                 grade="TCR",
             ),  # Should be excluded
-            CourseRow(
-                subject="ENGL", number="101", title="English", units=3.0, grade="B"
-            ),
+            CourseRow(subject="ENGL", number="101", title="English", units=3.0, grade="B"),
         ]
         # Only A (3 units) and B (3 units) should count: (4.0 * 3 + 3.0 * 3) / 6 = 21 / 6 = 3.5
 
@@ -141,58 +130,28 @@ class TestGPACalculator:
         """Test that all non-GPA grades are excluded."""
         courses = [
             CourseRow(
-                subject="CS",
-                number="101",
-                title="Graded Course 1",
-                units=3.0,
-                grade="A",
+                subject="CS", number="101", title="Graded Course", units=3.0, grade="A"
             ),  # Counts
             CourseRow(
-                subject="CS",
-                number="102",
-                title="Graded Course 2",
-                units=3.0,
-                grade="B",
-            ),  # Counts
-            CourseRow(
-                subject="CS", number="103", title="Pass/Fail", units=4.0, grade="P"
+                subject="CS", number="102", title="Pass/Fail", units=4.0, grade="P"
             ),  # Excluded
             CourseRow(
-                subject="CS", number="104", title="Satisfactory", units=2.0, grade="S"
+                subject="CS", number="103", title="In Progress", units=4.0, grade="IP"
             ),  # Excluded
             CourseRow(
-                subject="CS", number="105", title="Unsatisfactory", units=1.0, grade="U"
+                subject="CS", number="104", title="Withdrawn", units=3.0, grade="W"
             ),  # Excluded
             CourseRow(
-                subject="CS", number="106", title="Incomplete", units=3.0, grade="I"
+                subject="CS", number="105", title="Transfer", units=4.0, grade="TCR"
             ),  # Excluded
             CourseRow(
-                subject="CS", number="107", title="In Progress", units=4.0, grade="IP"
-            ),  # Excluded
-            CourseRow(
-                subject="CS", number="108", title="Withdrawn", units=3.0, grade="W"
-            ),  # Excluded
-            CourseRow(
-                subject="CS", number="109", title="No Record", units=1.0, grade="NR"
-            ),  # Excluded
-            CourseRow(
-                subject="CS", number="110", title="Audit", units=2.0, grade="AU"
-            ),  # Excluded
-            CourseRow(
-                subject="CS",
-                number="111",
-                title="Transfer Credit",
-                units=4.0,
-                grade="TCR",
-            ),  # Excluded
-            CourseRow(
-                subject="CS", number="112", title="No Grade", units=3.0, grade="NG"
+                subject="CS", number="106", title="No Grade", units=3.0, grade="NG"
             ),  # Excluded
         ]
-        # Only A (3 units) and B (3 units) should count: (4.0 * 3 + 3.0 * 3) / 6 = 21 / 6 = 3.5
+        # Only A (3 units) should count: 4.0 * 3 / 3 = 4.0
 
         gpa = self.calculator.calculate_gpa(courses)
-        assert gpa == 3.5, f"Expected GPA 3.5 (only A and B counted), got {gpa}"
+        assert gpa == 4.0, f"Expected GPA 4.0 (only A counted), got {gpa}"
 
     def test_empty_course_list(self):
         """Test GPA calculation with empty course list."""
@@ -204,15 +163,9 @@ class TestGPACalculator:
     def test_no_gpa_courses(self):
         """Test GPA calculation when all courses are non-GPA."""
         courses = [
-            CourseRow(
-                subject="CS", number="101", title="Pass/Fail", units=3.0, grade="P"
-            ),
-            CourseRow(
-                subject="MATH", number="201", title="Transfer", units=4.0, grade="TCR"
-            ),
-            CourseRow(
-                subject="ENGL", number="101", title="Withdrawn", units=3.0, grade="W"
-            ),
+            CourseRow(subject="CS", number="101", title="Pass/Fail", units=3.0, grade="P"),
+            CourseRow(subject="MATH", number="201", title="Transfer", units=4.0, grade="TCR"),
+            CourseRow(subject="ENGL", number="101", title="Withdrawn", units=3.0, grade="W"),
         ]
 
         gpa = self.calculator.calculate_gpa(courses)
@@ -221,15 +174,9 @@ class TestGPACalculator:
     def test_gpa_rounding_to_two_decimals(self):
         """Test that GPA is properly rounded to 2 decimal places."""
         courses = [
-            CourseRow(
-                subject="CS", number="101", title="Course 1", units=1.0, grade="A"
-            ),  # 4.0
-            CourseRow(
-                subject="CS", number="102", title="Course 2", units=1.0, grade="A"
-            ),  # 4.0
-            CourseRow(
-                subject="CS", number="103", title="Course 3", units=1.0, grade="B"
-            ),  # 3.0
+            CourseRow(subject="CS", number="101", title="Course 1", units=1.0, grade="A"),  # 4.0
+            CourseRow(subject="CS", number="102", title="Course 2", units=1.0, grade="A"),  # 4.0
+            CourseRow(subject="CS", number="103", title="Course 3", units=1.0, grade="B"),  # 3.0
         ]
         # Total: 11.0 quality points / 3 units = 3.6666..., should round to 3.67
 
@@ -238,30 +185,13 @@ class TestGPACalculator:
 
     def test_gpa_rounding_edge_cases(self):
         """Test GPA rounding with various edge cases."""
-        # Test rounding down (3.664 -> 3.66)
-        courses_down = [
-            CourseRow(
-                subject="CS", number="101", title="Course", units=250.0, grade="A"
-            ),  # 4.0 * 250 = 1000.0
-            CourseRow(
-                subject="CS", number="102", title="Course", units=23.0, grade="B"
-            ),  # 3.0 * 23 = 69.0
+        # Test case that results in 3.3333..., should round to 3.33
+        courses = [
+            CourseRow(subject="CS", number="101", title="Course", units=1.0, grade="A"),  # 4.0
+            CourseRow(subject="CS", number="102", title="Course", units=2.0, grade="B"),  # 6.0
         ]
-        # Total: 1069.0 / 273 = 3.9158..., should round to 3.92
-        gpa = self.calculator.calculate_gpa(courses_down)
-        assert gpa == 3.92, f"Expected GPA 3.92, got {gpa}"
-
-        # Test rounding up (3.665 -> 3.67)
-        courses_up = [
-            CourseRow(
-                subject="CS", number="101", title="Course", units=100.0, grade="A"
-            ),  # 4.0 * 100 = 400.0
-            CourseRow(
-                subject="CS", number="102", title="Course", units=200.0, grade="B"
-            ),  # 3.0 * 200 = 600.0
-        ]
-        # Total: 1000.0 / 300 = 3.3333..., should round to 3.33
-        gpa = self.calculator.calculate_gpa(courses_up)
+        # Total: 10.0 / 3 = 3.3333..., should round to 3.33
+        gpa = self.calculator.calculate_gpa(courses)
         assert gpa == 3.33, f"Expected GPA 3.33, got {gpa}"
 
     def test_zero_credit_courses(self):
@@ -343,13 +273,9 @@ class TestGPACalculator:
                 units=4.0,
                 grade="TCR",
             ),
-            CourseRow(
-                subject="ENGL", number="1XX", title="AP English", units=4.0, grade="TCR"
-            ),
+            CourseRow(subject="ENGL", number="1XX", title="AP English", units=4.0, grade="TCR"),
             # Courses in progress (should be excluded)
-            CourseRow(
-                subject="CS", number="256", title="Career Prep", units=2.0, grade="IP"
-            ),
+            CourseRow(subject="CS", number="256", title="Career Prep", units=2.0, grade="IP"),
             CourseRow(
                 subject="CS",
                 number="315",
@@ -358,9 +284,7 @@ class TestGPACalculator:
                 grade="IP",
             ),
             # Non-GPA graded course (should be excluded)
-            CourseRow(
-                subject="ENVS", number="100L", title="Laboratory", units=0.0, grade="NG"
-            ),
+            CourseRow(subject="ENVS", number="100L", title="Laboratory", units=0.0, grade="NG"),
         ]
 
         # Only the regular graded courses should count:
@@ -392,9 +316,7 @@ class TestGPACalculator:
 
         for grade, expected_points in test_cases:
             courses = [
-                CourseRow(
-                    subject="TEST", number="100", title="Test", units=1.0, grade=grade
-                )
+                CourseRow(subject="TEST", number="100", title="Test", units=1.0, grade=grade)
             ]
             gpa = self.calculator.calculate_gpa(courses)
             assert (

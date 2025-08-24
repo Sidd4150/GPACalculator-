@@ -19,22 +19,22 @@ class Settings(BaseSettings):
     environment: str = "development"
     cors_origins: Union[str, List[str]] = [
         "http://localhost:3000",
-        "http://localhost:3001", 
+        "http://localhost:3001",
         "http://localhost:5173",  # Vite default
     ]
     max_file_size_mb: int = 50
 
     # Server settings (hardcoded - same across environments)
     host: str = "0.0.0.0"  # Always bind to all interfaces
+    port: int = 8000  # Default port for local development
 
     # Rate limiting settings (hardcoded - same across environments)
-    rate_limit_upload: int = 10      # requests per minute
-    rate_limit_gpa: int = 50         # requests per minute  
-    rate_limit_health: int = 100     # requests per minute
+    rate_limit_upload: int = 10  # requests per minute
+    rate_limit_gpa: int = 50  # requests per minute
 
     # Development constants (hardcoded)
     rate_limit_storage_uri: str = "memory://"  # For development/testing
-    default_retry_after: int = 60              # seconds
+    default_retry_after: int = 60  # seconds
 
     @property
     def max_file_size_bytes(self) -> int:
@@ -46,7 +46,7 @@ class Settings(BaseSettings):
         """Get CORS origins as a list, handling both string and list types."""
         if isinstance(self.cors_origins, str):
             return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
-        return self.cors_origins
+        return list(self.cors_origins) if self.cors_origins else []
 
     @property
     def is_testing(self) -> bool:
@@ -54,7 +54,6 @@ class Settings(BaseSettings):
         return os.getenv("TESTING", "false").lower() == "true"
 
     model_config = SettingsConfigDict(
-        env_file=".env",
         case_sensitive=False,
     )
 

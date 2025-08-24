@@ -5,7 +5,7 @@ GPA Calculator service for computing Grade Point Average from course data.
 from typing import List
 from app.models.course import CourseRow
 from app.exceptions import CalculationError, ValidationError
-from app.constants import GRADE_POINTS, NON_GPA_GRADES, GPA_PRECISION_DIGITS
+from app.constants import GRADE_POINTS, GPA_PRECISION_DIGITS
 from app.utils.logger import setup_logger
 
 logger = setup_logger("gpa_calculator")
@@ -80,4 +80,4 @@ class GPACalculator:
             raise
         except Exception as e:
             logger.error("Unexpected error during GPA calculation: %s", e)
-            raise CalculationError(f"Failed to calculate GPA: {str(e)}")
+            raise CalculationError(f"Failed to calculate GPA: {str(e)}") from e
