@@ -106,12 +106,16 @@ async def upload_transcript(
             try:
                 os.unlink(temp_path)
             except OSError as cleanup_error:
-                logger.warning("Failed to cleanup temp file %s: %s", temp_path, cleanup_error)
+                logger.warning(
+                    "Failed to cleanup temp file %s: %s", temp_path, cleanup_error
+                )
 
         # Convert courses to dictionaries for JSON response
         courses_dict = [course.model_dump() for course in courses]
 
-        logger.info("Successfully processed %d courses from %s", len(courses), file.filename)
+        logger.info(
+            "Successfully processed %d courses from %s", len(courses), file.filename
+        )
         return courses_dict
 
     except Exception as e:

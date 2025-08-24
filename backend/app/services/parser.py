@@ -9,7 +9,7 @@ from pathlib import Path
 import pypdf
 from app.models.course import CourseRow
 from app.exceptions import FileError, ParsingError
-from app.constants import PARSING_ARTIFACTS
+from app.constants import PARSING_ARTIFACTS, COURSE_SOURCES
 from app.utils.logger import setup_logger
 
 logger = setup_logger("parser")
@@ -86,7 +86,9 @@ class TranscriptParser:
                             page_num + 1,
                         )
                     except (pypdf.errors.PdfReadError, AttributeError, ValueError) as e:
-                        logger.warning("Error extracting text from page %s: %s", page_num + 1, e)
+                        logger.warning(
+                            "Error extracting text from page %s: %s", page_num + 1, e
+                        )
                         continue  # Try to continue with other pages
 
         except pypdf.errors.PdfReadError as e:
@@ -158,7 +160,9 @@ class TranscriptParser:
                 end_pos = totals_start.start()
 
             if end_pos:
-                sections["institution_credit"] = text[institution_start.start() : end_pos]
+                sections["institution_credit"] = text[
+                    institution_start.start() : end_pos
+                ]
             else:
                 sections["institution_credit"] = text[institution_start.start() :]
         else:
@@ -199,7 +203,9 @@ class TranscriptParser:
         text = re.sub(r"([a-z])([A-Z]+[+-]?)(\s+[\d.]+\s+[\d.]+)", r"\1 \2\3", text)
         return text
 
-    def parse_section_courses(self, section_text: str, section_name: str) -> List[CourseRow]:
+    def parse_section_courses(
+        self, section_text: str, section_name: str
+    ) -> List[CourseRow]:
         """
         Parse all courses from a transcript section.
 
@@ -266,7 +272,9 @@ class TranscriptParser:
 
         for match in matches:
             subject, number, title, units = match
-            course = self._create_course_row(subject, number, title.strip(), "IP", units)
+            course = self._create_course_row(
+                subject, number, title.strip(), "IP", units
+            )
             if course:
                 courses.append(course)
 
@@ -295,6 +303,7 @@ class TranscriptParser:
                 title=title,
                 units=float(units),
                 grade=grade,
+                source=COURSE_SOURCES["PARSED"],
             )
         except (ValueError, TypeError, AttributeError):
             return None
@@ -318,10 +327,18 @@ class TranscriptParser:
             if not clean_title:
                 continue
 
-            # Create cleaned course
-            cleaned_course = self._create_course_row(
-                course.subject, course.number, clean_title, course.grade, str(course.units)
-            )
+            # Create cleaned course - preserve the original source
+            try:
+                cleaned_course = CourseRow(
+                    subject=course.subject,
+                    number=course.number,
+                    title=clean_title,
+                    units=course.units,
+                    grade=course.grade,
+                    source=course.source,
+                )
+            except (ValueError, TypeError, AttributeError):
+                cleaned_course = None
             if cleaned_course:
                 cleaned_courses.append(cleaned_course)
 
@@ -341,7 +358,9 @@ class TranscriptParser:
 
         # Remove common parsing artifacts
         for artifact in PARSING_ARTIFACTS:
-            clean_title = re.sub(artifact, "", clean_title, flags=re.IGNORECASE | re.DOTALL)
+            clean_title = re.sub(
+                artifact, "", clean_title, flags=re.IGNORECASE | re.DOTALL
+            )
 
         # Clean up extra whitespace
         clean_title = re.sub(r"\s+", " ", clean_title).strip()
@@ -429,10 +448,14 @@ class TranscriptParser:
             for section_key, section_name in section_parsers:
                 if sections[section_key]:
                     try:
-                        courses = self.parse_section_courses(sections[section_key], section_name)
+                        courses = self.parse_section_courses(
+                            sections[section_key], section_name
+                        )
                         all_courses.extend(courses)
                         logger.debug(
-                            "Parsed %d courses from %s section", len(courses), section_name
+                            "Parsed %d courses from %s section",
+                            len(courses),
+                            section_name,
                         )
                     except (ValueError, AttributeError, TypeError) as e:
                         logger.error("Error parsing %s section: %s", section_name, e)
@@ -449,7 +472,9 @@ class TranscriptParser:
             # Final validation and logging
             self._validate_parsing_results(cleaned_courses, text, sections)
 
-            logger.info("Successfully parsed %d courses from transcript", len(cleaned_courses))
+            logger.info(
+                "Successfully parsed %d courses from transcript", len(cleaned_courses)
+            )
             return cleaned_courses
 
         except (FileError, ParsingError, FileNotFoundError):

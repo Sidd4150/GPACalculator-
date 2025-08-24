@@ -3,7 +3,9 @@ Pydantic models for course data.
 """
 
 import re
+from typing import Literal
 from pydantic import BaseModel, Field, field_validator
+from app.constants import COURSE_SOURCES
 
 
 class CourseRow(BaseModel):
@@ -16,6 +18,7 @@ class CourseRow(BaseModel):
         title: Course title (non-empty string)
         units: Credit units (positive number)
         grade: Letter grade or special code (TCR for transfer, IP for in-progress)
+        source: Source of the course data ('parsed' from transcript or 'manual' entry)
     """
 
     subject: str = Field(..., description="Course subject code")
@@ -23,6 +26,9 @@ class CourseRow(BaseModel):
     title: str = Field(..., description="Course title")
     units: float = Field(..., ge=0, description="Credit units (must be non-negative)")
     grade: str = Field(..., description="Letter grade or special code")
+    source: Literal["parsed", "manual"] = Field(
+        ..., description="Source of the course data"
+    )
 
     @field_validator("subject")
     @classmethod

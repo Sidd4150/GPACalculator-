@@ -45,7 +45,11 @@ class Settings(BaseSettings):
     def cors_origins_list(self) -> List[str]:
         """Get CORS origins as a list, handling both string and list types."""
         if isinstance(self.cors_origins, str):
-            return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+            return [
+                origin.strip()
+                for origin in self.cors_origins.split(",")
+                if origin.strip()
+            ]
         return list(self.cors_origins) if self.cors_origins else []
 
     @property

@@ -49,7 +49,9 @@ def setup_logger(name: str = "gpa_calculator", level: str = "INFO") -> logging.L
         log_instance.addHandler(file_handler)
     except (OSError, PermissionError):
         # If we can't write to file, continue with console logging only
-        log_instance.warning("Could not create file handler, using console logging only")
+        log_instance.warning(
+            "Could not create file handler, using console logging only"
+        )
 
     return log_instance
 

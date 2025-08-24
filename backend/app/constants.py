@@ -72,6 +72,12 @@ GPA_PRECISION_DIGITS = 2
 MIN_GPA = 0.0
 MAX_GPA = 4.0
 
+# Course Source Constants
+COURSE_SOURCES = {
+    "PARSED": "parsed",
+    "MANUAL": "manual",
+}
+
 # Parsing Constants
 PARSING_ARTIFACTS = [
     r"DO NOT PRINT.*$",

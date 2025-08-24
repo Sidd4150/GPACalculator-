@@ -16,7 +16,12 @@ class TestAPIEndpoints:
     def setup_method(self):
         """Set up test fixtures."""
         self.client = TestClient(app)
-        self.test_transcript_path = Path(__file__).parent.parent / "Academic Transcript.pdf"
+        self.test_transcript_path = (
+            Path(__file__).parent
+            / "fixtures"
+            / "transcripts"
+            / "Academic Transcript.pdf"
+        )
 
     def test_upload_valid_pdf(self):
         """Test /upload endpoint with valid PDF file."""
@@ -37,7 +42,7 @@ class TestAPIEndpoints:
 
         # Validate course structure
         course = data[0]
-        required_fields = {"subject", "number", "title", "units", "grade"}
+        required_fields = {"subject", "number", "title", "units", "grade", "source"}
         assert all(
             field in course for field in required_fields
         ), f"Course missing required fields: {course}"
@@ -121,6 +126,7 @@ class TestAPIEndpoints:
                     "title": "Intro to Computer Science",
                     "units": 4.0,
                     "grade": "A",
+                    "source": "manual",
                 },
                 {
                     "subject": "MATH",
@@ -128,6 +134,7 @@ class TestAPIEndpoints:
                     "title": "Calculus",
                     "units": 3.0,
                     "grade": "B",
+                    "source": "manual",
                 },
             ]
         }
@@ -154,6 +161,7 @@ class TestAPIEndpoints:
                     "title": "Regular Course",
                     "units": 3.0,
                     "grade": "A",
+                    "source": "manual",
                 },
                 {
                     "subject": "MATH",
@@ -161,6 +169,7 @@ class TestAPIEndpoints:
                     "title": "Transfer Course",
                     "units": 4.0,
                     "grade": "TCR",  # Should be excluded
+                    "source": "manual",
                 },
                 {
                     "subject": "ENGL",
@@ -168,6 +177,7 @@ class TestAPIEndpoints:
                     "title": "Another Course",
                     "units": 3.0,
                     "grade": "B+",
+                    "source": "manual",
                 },
                 {
                     "subject": "PHIL",
@@ -175,6 +185,7 @@ class TestAPIEndpoints:
                     "title": "In Progress",
                     "units": 3.0,
                     "grade": "IP",  # Should be excluded
+                    "source": "manual",
                 },
             ]
         }
@@ -222,6 +233,7 @@ class TestAPIEndpoints:
                     "title": "Test Course",
                     "units": "invalid_units",  # Should be number
                     "grade": "A",
+                    "source": "manual",
                 }
             ]
         }
@@ -238,6 +250,7 @@ class TestAPIEndpoints:
                     "subject": "CS",
                     "number": "101",
                     "title": "Test Course",
+                    "source": "manual",
                     # Missing 'units' and 'grade'
                 }
             ]
@@ -257,6 +270,7 @@ class TestAPIEndpoints:
                     "title": "Test Course",
                     "units": 3.0,
                     "grade": "INVALID_GRADE",
+                    "source": "manual",
                 }
             ]
         }
@@ -268,7 +282,9 @@ class TestAPIEndpoints:
     def test_gpa_invalid_payload_not_json(self):
         """Test /gpa endpoint with non-JSON payload."""
         response = self.client.post(
-            "/api/v1/gpa", data="not json data", headers={"content-type": "application/json"}
+            "/api/v1/gpa",
+            data="not json data",
+            headers={"content-type": "application/json"},
         )
 
         assert response.status_code == 422, f"Expected 422, got {response.status_code}"
@@ -323,6 +339,7 @@ class TestAPIEndpoints:
                         "title": "Test Course",
                         "units": 3.0,
                         "grade": "A",
+                        "source": "manual",
                     }
                 ]
             }
@@ -331,11 +348,15 @@ class TestAPIEndpoints:
         # Make 5 concurrent requests
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             futures = [executor.submit(make_gpa_request) for _ in range(5)]
-            responses = [future.result() for future in concurrent.futures.as_completed(futures)]
+            responses = [
+                future.result() for future in concurrent.futures.as_completed(futures)
+            ]
 
         # All should succeed
         for response in responses:
-            assert response.status_code == 200, f"Concurrent request failed: {response.status_code}"
+            assert (
+                response.status_code == 200
+            ), f"Concurrent request failed: {response.status_code}"
             gpa = response.json()
             assert gpa == 4.0, f"Expected GPA 4.0, got {gpa}"
 
@@ -350,6 +371,7 @@ class TestAPIEndpoints:
                     "title": "Test Course",
                     "units": 3.0,
                     "grade": "A",
+                    "source": "manual",
                 }
             ]
         }
@@ -357,7 +379,9 @@ class TestAPIEndpoints:
         response = self.client.post("/api/v1/gpa", json=courses_payload)
 
         # Should succeed and include CORS headers (handled by FastAPI middleware)
-        assert response.status_code == 200, f"CORS-enabled request failed: {response.status_code}"
+        assert (
+            response.status_code == 200
+        ), f"CORS-enabled request failed: {response.status_code}"
 
     def test_response_content_type(self):
         """Test that responses have correct Content-Type headers."""
@@ -369,6 +393,7 @@ class TestAPIEndpoints:
                     "title": "Test Course",
                     "units": 3.0,
                     "grade": "A",
+                    "source": "manual",
                 }
             ]
         }

@@ -153,7 +153,9 @@ class TestServices(unittest.TestCase):
         exc = FileError("File size exceeds limit", "Size details")
         http_exc = map_exception_to_http(exc)
         self.assertEqual(http_exc.status_code, 413)
-        self.assertEqual(http_exc.detail, "File processing error: File size exceeds limit")
+        self.assertEqual(
+            http_exc.detail, "File processing error: File size exceeds limit"
+        )
 
 
 if __name__ == "__main__":

@@ -16,11 +16,18 @@ class TestTranscriptParser:
     def setup_method(self):
         """Set up test fixtures."""
         self.parser = TranscriptParser()
-        self.sample_transcript_path = Path("Academic Transcript.pdf")
+        self.sample_transcript_path = (
+            Path(__file__).parent
+            / "fixtures"
+            / "transcripts"
+            / "Academic Transcript.pdf"
+        )
 
     def test_parse_pdf_file_exists(self):
         """Test that parser can read the sample PDF file."""
-        assert self.sample_transcript_path.exists(), "Sample transcript PDF should exist"
+        assert (
+            self.sample_transcript_path.exists()
+        ), "Sample transcript PDF should exist"
 
         courses = self.parser.parse_transcript(str(self.sample_transcript_path))
         assert isinstance(courses, list), "Parser should return a list of courses"
@@ -40,11 +47,17 @@ class TestTranscriptParser:
         sections = self.parser.identify_sections(text)
 
         assert "transfer_credit" in sections, "Should detect transfer credit section"
-        assert "institution_credit" in sections, "Should detect institution credit section"
-        assert "courses_in_progress" in sections, "Should detect courses in progress section"
+        assert (
+            "institution_credit" in sections
+        ), "Should detect institution credit section"
+        assert (
+            "courses_in_progress" in sections
+        ), "Should detect courses in progress section"
 
         # Verify section content is not empty
-        assert len(sections["transfer_credit"]) > 0, "Transfer credit section should not be empty"
+        assert (
+            len(sections["transfer_credit"]) > 0
+        ), "Transfer credit section should not be empty"
         assert (
             len(sections["institution_credit"]) > 0
         ), "Institution credit section should not be empty"
@@ -57,7 +70,9 @@ class TestTranscriptParser:
         courses = self.parser.parse_transcript(str(self.sample_transcript_path))
         transfer_courses = [c for c in courses if c.grade == "TCR"]
 
-        assert len(transfer_courses) == 10, "Should find exactly 10 transfer credit courses"
+        assert (
+            len(transfer_courses) == 10
+        ), "Should find exactly 10 transfer credit courses"
 
         # All transfer courses should have TCR grade and valid properties
         for course in transfer_courses:
@@ -72,7 +87,9 @@ class TestTranscriptParser:
         courses = self.parser.parse_transcript(str(self.sample_transcript_path))
         institution_courses = [c for c in courses if c.grade not in ["TCR", "IP"]]
 
-        assert len(institution_courses) == 28, "Should find exactly 28 institution credit courses"
+        assert (
+            len(institution_courses) == 28
+        ), "Should find exactly 28 institution credit courses"
 
         # Verify institution courses have valid letter grades and properties
         valid_grades = {
@@ -95,7 +112,9 @@ class TestTranscriptParser:
             assert (
                 course.grade in valid_grades
             ), f"Institution course should have valid grade, got {course.grade}"
-            assert course.units >= 0, "Institution courses should have non-negative units"
+            assert (
+                course.units >= 0
+            ), "Institution courses should have non-negative units"
             assert course.title, "Institution courses should have titles"
 
     def test_parse_courses_in_progress(self):
@@ -103,12 +122,16 @@ class TestTranscriptParser:
         courses = self.parser.parse_transcript(str(self.sample_transcript_path))
         in_progress_courses = [c for c in courses if c.grade == "IP"]
 
-        assert len(in_progress_courses) == 6, "Should find exactly 6 courses in progress"
+        assert (
+            len(in_progress_courses) == 6
+        ), "Should find exactly 6 courses in progress"
 
         # Verify in-progress courses have IP grade and valid properties
         for course in in_progress_courses:
             assert course.grade == "IP", "In-progress course should have IP grade"
-            assert course.units >= 0, "In-progress courses should have non-negative units"
+            assert (
+                course.units >= 0
+            ), "In-progress courses should have non-negative units"
             assert course.title, "In-progress courses should have titles"
 
     def test_handle_multiline_titles(self):
@@ -116,9 +139,13 @@ class TestTranscriptParser:
         courses = self.parser.parse_transcript(str(self.sample_transcript_path))
 
         # Find course with multiline title
-        multiline_course = next((c for c in courses if "Software Dev with" in c.title), None)
+        multiline_course = next(
+            (c for c in courses if "Software Dev with" in c.title), None
+        )
         assert multiline_course is not None, "Should find course with multiline title"
-        assert "Code Review" in multiline_course.title, "Should include full multiline title"
+        assert (
+            "Code Review" in multiline_course.title
+        ), "Should include full multiline title"
 
         # Test another multiline title
         envs_course = next(
@@ -140,25 +167,39 @@ class TestTranscriptParser:
 
         # Test courses with lab sections that have special handling
         lab_course = next(
-            (c for c in courses if "Laboratory" in c.title and "DO NOT PRINT" in c.title),
+            (
+                c
+                for c in courses
+                if "Laboratory" in c.title and "DO NOT PRINT" in c.title
+            ),
             None,
         )
         if lab_course:
-            assert lab_course.grade == "NG", "Lab course marked DO NOT PRINT should have NG grade"
-            assert lab_course.units == 0.0, "Lab course marked DO NOT PRINT should have 0 units"
+            assert (
+                lab_course.grade == "NG"
+            ), "Lab course marked DO NOT PRINT should have NG grade"
+            assert (
+                lab_course.units == 0.0
+            ), "Lab course marked DO NOT PRINT should have 0 units"
 
     def test_handle_course_numbers_with_letters(self):
         """Test parsing of course numbers with trailing letters."""
         courses = self.parser.parse_transcript(str(self.sample_transcript_path))
 
         # Test course numbers with letters
-        cs_272n = next((c for c in courses if c.subject == "CS" and c.number == "272N"), None)
+        cs_272n = next(
+            (c for c in courses if c.subject == "CS" and c.number == "272N"), None
+        )
         assert cs_272n is not None, "Should find CS 272N course"
 
-        envs_100l = next((c for c in courses if c.subject == "ENVS" and c.number == "100L"), None)
+        envs_100l = next(
+            (c for c in courses if c.subject == "ENVS" and c.number == "100L"), None
+        )
         assert envs_100l is not None, "Should find ENVS 100L course"
 
-        cs_315l = next((c for c in courses if c.subject == "CS" and c.number == "315L"), None)
+        cs_315l = next(
+            (c for c in courses if c.subject == "CS" and c.number == "315L"), None
+        )
         assert cs_315l is not None, "Should find CS 315L course"
 
     def test_handle_variable_credit_hours(self):
@@ -180,7 +221,9 @@ class TestTranscriptParser:
     def test_course_regex_patterns(self):
         """Test individual regex patterns used for course parsing."""
         # Test that regex patterns are compiled correctly
-        assert self.parser._course_pattern is not None, "Should have course with grade pattern"
+        assert (
+            self.parser._course_pattern is not None
+        ), "Should have course with grade pattern"
         assert self.parser._progress_pattern is not None, "Should have progress pattern"
 
         # Test standard course line pattern by parsing a small section with known course
@@ -191,7 +234,9 @@ class TestTranscriptParser:
         course = courses[0]
         assert course.subject == "CS", "Should extract subject correctly"
         assert course.number == "110", "Should extract number correctly"
-        assert course.title == "Intro to Computer Science I", "Should extract title correctly"
+        assert (
+            course.title == "Intro to Computer Science I"
+        ), "Should extract title correctly"
         assert course.grade == "A+", "Should extract grade correctly"
         assert course.units == 4.0, "Should extract units correctly"
 
@@ -199,7 +244,9 @@ class TestTranscriptParser:
         """Test parsing the complete transcript and verify totals."""
         courses = self.parser.parse_transcript(str(self.sample_transcript_path))
 
-        assert len(courses) == 44, "Should parse exactly 44 courses from Academic Transcript.pdf"
+        assert (
+            len(courses) == 44
+        ), "Should parse exactly 44 courses from Academic Transcript.pdf"
 
         # Verify we have courses from all types (transfer, institution, in-progress)
         grades = {course.grade for course in courses}
@@ -211,7 +258,9 @@ class TestTranscriptParser:
 
         # Verify all courses are valid CourseRow instances
         for course in courses:
-            assert isinstance(course, CourseRow), "All parsed items should be CourseRow instances"
+            assert isinstance(
+                course, CourseRow
+            ), "All parsed items should be CourseRow instances"
             assert course.subject, "All courses should have subject"
             assert course.number, "All courses should have number"
             assert course.title, "All courses should have title"
@@ -229,7 +278,9 @@ class TestTranscriptParser:
         assert len(courses) == 0, "Should return empty list for empty section"
 
         # Test invalid section format
-        courses = self.parser.parse_section_courses("Invalid section format", "INSTITUTION CREDIT")
+        courses = self.parser.parse_section_courses(
+            "Invalid section format", "INSTITUTION CREDIT"
+        )
         assert len(courses) == 0, "Should return empty list for invalid section format"
 
     def test_section_boundary_detection(self):
@@ -251,4 +302,6 @@ class TestTranscriptParser:
         ), "Institution section should contain letter grades"
 
         # Progress section should be clearly marked
-        assert "COURSES IN PROGRESS" in progress_text, "Progress section should be clearly marked"
+        assert (
+            "COURSES IN PROGRESS" in progress_text
+        ), "Progress section should be clearly marked"

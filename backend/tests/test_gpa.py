@@ -16,9 +16,30 @@ class TestGPACalculator:
     def test_basic_gpa_calculation_all_a_grades(self):
         """Test GPA calculation with all A grades."""
         courses = [
-            CourseRow(subject="CS", number="101", title="Intro to CS", units=3.0, grade="A"),
-            CourseRow(subject="MATH", number="201", title="Calculus", units=4.0, grade="A"),
-            CourseRow(subject="ENGL", number="101", title="English", units=3.0, grade="A"),
+            CourseRow(
+                subject="CS",
+                number="101",
+                title="Intro to CS",
+                units=3.0,
+                grade="A",
+                source="parsed",
+            ),
+            CourseRow(
+                subject="MATH",
+                number="201",
+                title="Calculus",
+                units=4.0,
+                grade="A",
+                source="parsed",
+            ),
+            CourseRow(
+                subject="ENGL",
+                number="101",
+                title="English",
+                units=3.0,
+                grade="A",
+                source="parsed",
+            ),
         ]
 
         gpa = self.calculator.calculate_gpa(courses)
@@ -28,13 +49,28 @@ class TestGPACalculator:
         """Test GPA calculation with mixed letter grades."""
         courses = [
             CourseRow(
-                subject="CS", number="101", title="Intro to CS", units=4.0, grade="A"
+                subject="CS",
+                number="101",
+                title="Intro to CS",
+                units=4.0,
+                grade="A",
+                source="parsed",
             ),  # 4.0 * 4 = 16
             CourseRow(
-                subject="MATH", number="201", title="Calculus", units=3.0, grade="B"
+                subject="MATH",
+                number="201",
+                title="Calculus",
+                units=3.0,
+                grade="B",
+                source="parsed",
             ),  # 3.0 * 3 = 9
             CourseRow(
-                subject="ENGL", number="101", title="English", units=3.0, grade="C"
+                subject="ENGL",
+                number="101",
+                title="English",
+                units=3.0,
+                grade="C",
+                source="parsed",
             ),  # 2.0 * 3 = 6
         ]
         # Total: 31 quality points / 10 units = 3.1
@@ -46,13 +82,28 @@ class TestGPACalculator:
         """Test GPA calculation with plus and minus grades."""
         courses = [
             CourseRow(
-                subject="CS", number="101", title="Intro to CS", units=3.0, grade="A-"
+                subject="CS",
+                number="101",
+                title="Intro to CS",
+                units=3.0,
+                grade="A-",
+                source="parsed",
             ),  # 3.7 * 3 = 11.1
             CourseRow(
-                subject="MATH", number="201", title="Calculus", units=3.0, grade="B+"
+                subject="MATH",
+                number="201",
+                title="Calculus",
+                units=3.0,
+                grade="B+",
+                source="parsed",
             ),  # 3.3 * 3 = 9.9
             CourseRow(
-                subject="ENGL", number="101", title="English", units=3.0, grade="C-"
+                subject="ENGL",
+                number="101",
+                title="English",
+                units=3.0,
+                grade="C-",
+                source="parsed",
             ),  # 1.7 * 3 = 5.1
         ]
         # Total: 26.1 quality points / 9 units = 2.9
@@ -64,43 +115,108 @@ class TestGPACalculator:
         """Test GPA calculation with all standard letter grades."""
         courses = [
             CourseRow(
-                subject="CS", number="101", title="Course 1", units=1.0, grade="A+"
+                subject="CS",
+                number="101",
+                title="Course 1",
+                units=1.0,
+                grade="A+",
+                source="parsed",
             ),  # 4.0 * 1 = 4.0
             CourseRow(
-                subject="CS", number="102", title="Course 2", units=1.0, grade="A"
+                subject="CS",
+                number="102",
+                title="Course 2",
+                units=1.0,
+                grade="A",
+                source="parsed",
             ),  # 4.0 * 1 = 4.0
             CourseRow(
-                subject="CS", number="103", title="Course 3", units=1.0, grade="A-"
+                subject="CS",
+                number="103",
+                title="Course 3",
+                units=1.0,
+                grade="A-",
+                source="parsed",
             ),  # 3.7 * 1 = 3.7
             CourseRow(
-                subject="CS", number="104", title="Course 4", units=1.0, grade="B+"
+                subject="CS",
+                number="104",
+                title="Course 4",
+                units=1.0,
+                grade="B+",
+                source="parsed",
             ),  # 3.3 * 1 = 3.3
             CourseRow(
-                subject="CS", number="105", title="Course 5", units=1.0, grade="B"
+                subject="CS",
+                number="105",
+                title="Course 5",
+                units=1.0,
+                grade="B",
+                source="parsed",
             ),  # 3.0 * 1 = 3.0
             CourseRow(
-                subject="CS", number="106", title="Course 6", units=1.0, grade="B-"
+                subject="CS",
+                number="106",
+                title="Course 6",
+                units=1.0,
+                grade="B-",
+                source="parsed",
             ),  # 2.7 * 1 = 2.7
             CourseRow(
-                subject="CS", number="107", title="Course 7", units=1.0, grade="C+"
+                subject="CS",
+                number="107",
+                title="Course 7",
+                units=1.0,
+                grade="C+",
+                source="parsed",
             ),  # 2.3 * 1 = 2.3
             CourseRow(
-                subject="CS", number="108", title="Course 8", units=1.0, grade="C"
+                subject="CS",
+                number="108",
+                title="Course 8",
+                units=1.0,
+                grade="C",
+                source="parsed",
             ),  # 2.0 * 1 = 2.0
             CourseRow(
-                subject="CS", number="109", title="Course 9", units=1.0, grade="C-"
+                subject="CS",
+                number="109",
+                title="Course 9",
+                units=1.0,
+                grade="C-",
+                source="parsed",
             ),  # 1.7 * 1 = 1.7
             CourseRow(
-                subject="CS", number="110", title="Course 10", units=1.0, grade="D+"
+                subject="CS",
+                number="110",
+                title="Course 10",
+                units=1.0,
+                grade="D+",
+                source="parsed",
             ),  # 1.3 * 1 = 1.3
             CourseRow(
-                subject="CS", number="111", title="Course 11", units=1.0, grade="D"
+                subject="CS",
+                number="111",
+                title="Course 11",
+                units=1.0,
+                grade="D",
+                source="parsed",
             ),  # 1.0 * 1 = 1.0
             CourseRow(
-                subject="CS", number="112", title="Course 12", units=1.0, grade="D-"
+                subject="CS",
+                number="112",
+                title="Course 12",
+                units=1.0,
+                grade="D-",
+                source="parsed",
             ),  # 0.7 * 1 = 0.7
             CourseRow(
-                subject="CS", number="113", title="Course 13", units=1.0, grade="F"
+                subject="CS",
+                number="113",
+                title="Course 13",
+                units=1.0,
+                grade="F",
+                source="parsed",
             ),  # 0.0 * 1 = 0.0
         ]
         # Total: 29.7 quality points / 13 units = 2.284..., rounded to 2.28
@@ -111,15 +227,30 @@ class TestGPACalculator:
     def test_exclude_non_gpa_grades_tcr(self):
         """Test that TCR grades are excluded from GPA calculation."""
         courses = [
-            CourseRow(subject="CS", number="101", title="Intro to CS", units=3.0, grade="A"),
+            CourseRow(
+                subject="CS",
+                number="101",
+                title="Intro to CS",
+                units=3.0,
+                grade="A",
+                source="parsed",
+            ),
             CourseRow(
                 subject="MATH",
                 number="201",
                 title="Transfer Math",
                 units=4.0,
                 grade="TCR",
+                source="parsed",
             ),  # Should be excluded
-            CourseRow(subject="ENGL", number="101", title="English", units=3.0, grade="B"),
+            CourseRow(
+                subject="ENGL",
+                number="101",
+                title="English",
+                units=3.0,
+                grade="B",
+                source="parsed",
+            ),
         ]
         # Only A (3 units) and B (3 units) should count: (4.0 * 3 + 3.0 * 3) / 6 = 21 / 6 = 3.5
 
@@ -130,22 +261,52 @@ class TestGPACalculator:
         """Test that all non-GPA grades are excluded."""
         courses = [
             CourseRow(
-                subject="CS", number="101", title="Graded Course", units=3.0, grade="A"
+                subject="CS",
+                number="101",
+                title="Graded Course",
+                units=3.0,
+                grade="A",
+                source="parsed",
             ),  # Counts
             CourseRow(
-                subject="CS", number="102", title="Pass/Fail", units=4.0, grade="P"
+                subject="CS",
+                number="102",
+                title="Pass/Fail",
+                units=4.0,
+                grade="P",
+                source="parsed",
             ),  # Excluded
             CourseRow(
-                subject="CS", number="103", title="In Progress", units=4.0, grade="IP"
+                subject="CS",
+                number="103",
+                title="In Progress",
+                units=4.0,
+                grade="IP",
+                source="parsed",
             ),  # Excluded
             CourseRow(
-                subject="CS", number="104", title="Withdrawn", units=3.0, grade="W"
+                subject="CS",
+                number="104",
+                title="Withdrawn",
+                units=3.0,
+                grade="W",
+                source="parsed",
             ),  # Excluded
             CourseRow(
-                subject="CS", number="105", title="Transfer", units=4.0, grade="TCR"
+                subject="CS",
+                number="105",
+                title="Transfer",
+                units=4.0,
+                grade="TCR",
+                source="parsed",
             ),  # Excluded
             CourseRow(
-                subject="CS", number="106", title="No Grade", units=3.0, grade="NG"
+                subject="CS",
+                number="106",
+                title="No Grade",
+                units=3.0,
+                grade="NG",
+                source="parsed",
             ),  # Excluded
         ]
         # Only A (3 units) should count: 4.0 * 3 / 3 = 4.0
@@ -163,9 +324,30 @@ class TestGPACalculator:
     def test_no_gpa_courses(self):
         """Test GPA calculation when all courses are non-GPA."""
         courses = [
-            CourseRow(subject="CS", number="101", title="Pass/Fail", units=3.0, grade="P"),
-            CourseRow(subject="MATH", number="201", title="Transfer", units=4.0, grade="TCR"),
-            CourseRow(subject="ENGL", number="101", title="Withdrawn", units=3.0, grade="W"),
+            CourseRow(
+                subject="CS",
+                number="101",
+                title="Pass/Fail",
+                units=3.0,
+                grade="P",
+                source="parsed",
+            ),
+            CourseRow(
+                subject="MATH",
+                number="201",
+                title="Transfer",
+                units=4.0,
+                grade="TCR",
+                source="parsed",
+            ),
+            CourseRow(
+                subject="ENGL",
+                number="101",
+                title="Withdrawn",
+                units=3.0,
+                grade="W",
+                source="parsed",
+            ),
         ]
 
         gpa = self.calculator.calculate_gpa(courses)
@@ -174,9 +356,30 @@ class TestGPACalculator:
     def test_gpa_rounding_to_two_decimals(self):
         """Test that GPA is properly rounded to 2 decimal places."""
         courses = [
-            CourseRow(subject="CS", number="101", title="Course 1", units=1.0, grade="A"),  # 4.0
-            CourseRow(subject="CS", number="102", title="Course 2", units=1.0, grade="A"),  # 4.0
-            CourseRow(subject="CS", number="103", title="Course 3", units=1.0, grade="B"),  # 3.0
+            CourseRow(
+                subject="CS",
+                number="101",
+                title="Course 1",
+                units=1.0,
+                grade="A",
+                source="parsed",
+            ),  # 4.0
+            CourseRow(
+                subject="CS",
+                number="102",
+                title="Course 2",
+                units=1.0,
+                grade="A",
+                source="parsed",
+            ),  # 4.0
+            CourseRow(
+                subject="CS",
+                number="103",
+                title="Course 3",
+                units=1.0,
+                grade="B",
+                source="parsed",
+            ),  # 3.0
         ]
         # Total: 11.0 quality points / 3 units = 3.6666..., should round to 3.67
 
@@ -187,8 +390,22 @@ class TestGPACalculator:
         """Test GPA rounding with various edge cases."""
         # Test case that results in 3.3333..., should round to 3.33
         courses = [
-            CourseRow(subject="CS", number="101", title="Course", units=1.0, grade="A"),  # 4.0
-            CourseRow(subject="CS", number="102", title="Course", units=2.0, grade="B"),  # 6.0
+            CourseRow(
+                subject="CS",
+                number="101",
+                title="Course",
+                units=1.0,
+                grade="A",
+                source="parsed",
+            ),  # 4.0
+            CourseRow(
+                subject="CS",
+                number="102",
+                title="Course",
+                units=2.0,
+                grade="B",
+                source="parsed",
+            ),  # 6.0
         ]
         # Total: 10.0 / 3 = 3.3333..., should round to 3.33
         gpa = self.calculator.calculate_gpa(courses)
@@ -198,13 +415,28 @@ class TestGPACalculator:
         """Test handling of zero-credit courses."""
         courses = [
             CourseRow(
-                subject="CS", number="101", title="Regular Course", units=3.0, grade="A"
+                subject="CS",
+                number="101",
+                title="Regular Course",
+                units=3.0,
+                grade="A",
+                source="parsed",
             ),  # Counts
             CourseRow(
-                subject="CS", number="102", title="Zero Credit", units=0.0, grade="A"
+                subject="CS",
+                number="102",
+                title="Zero Credit",
+                units=0.0,
+                grade="A",
+                source="parsed",
             ),  # Should not count
             CourseRow(
-                subject="CS", number="103", title="Regular Course", units=3.0, grade="B"
+                subject="CS",
+                number="103",
+                title="Regular Course",
+                units=3.0,
+                grade="B",
+                source="parsed",
             ),  # Counts
         ]
         # Only 3.0 units A and 3.0 units B: (4.0 * 3 + 3.0 * 3) / 6 = 21 / 6 = 3.5
@@ -222,6 +454,7 @@ class TestGPACalculator:
                 title="Intro to Computer Science I",
                 units=4.0,
                 grade="A+",
+                source="parsed",
             ),
             CourseRow(
                 subject="CS",
@@ -229,6 +462,7 @@ class TestGPACalculator:
                 title="Intro to Computer Science II",
                 units=4.0,
                 grade="A+",
+                source="parsed",
             ),
             CourseRow(
                 subject="CS",
@@ -236,6 +470,7 @@ class TestGPACalculator:
                 title="C and Systems Programming",
                 units=4.0,
                 grade="A",
+                source="parsed",
             ),
             CourseRow(
                 subject="CS",
@@ -243,6 +478,7 @@ class TestGPACalculator:
                 title="Data Struct & Algorithms",
                 units=4.0,
                 grade="A+",
+                source="parsed",
             ),
             CourseRow(
                 subject="MATH",
@@ -250,6 +486,7 @@ class TestGPACalculator:
                 title="Discrete Mathematics",
                 units=4.0,
                 grade="A+",
+                source="parsed",
             ),
             CourseRow(
                 subject="CS",
@@ -257,6 +494,7 @@ class TestGPACalculator:
                 title="Foundations of AI",
                 units=4.0,
                 grade="A",
+                source="parsed",
             ),
             # Transfer credits (should be excluded)
             CourseRow(
@@ -265,6 +503,7 @@ class TestGPACalculator:
                 title="History of the U.S.",
                 units=4.0,
                 grade="TCR",
+                source="parsed",
             ),
             CourseRow(
                 subject="MATH",
@@ -272,19 +511,42 @@ class TestGPACalculator:
                 title="Elementary Statistics",
                 units=4.0,
                 grade="TCR",
+                source="parsed",
             ),
-            CourseRow(subject="ENGL", number="1XX", title="AP English", units=4.0, grade="TCR"),
+            CourseRow(
+                subject="ENGL",
+                number="1XX",
+                title="AP English",
+                units=4.0,
+                grade="TCR",
+                source="parsed",
+            ),
             # Courses in progress (should be excluded)
-            CourseRow(subject="CS", number="256", title="Career Prep", units=2.0, grade="IP"),
+            CourseRow(
+                subject="CS",
+                number="256",
+                title="Career Prep",
+                units=2.0,
+                grade="IP",
+                source="parsed",
+            ),
             CourseRow(
                 subject="CS",
                 number="315",
                 title="Computer Architecture",
                 units=4.0,
                 grade="IP",
+                source="parsed",
             ),
             # Non-GPA graded course (should be excluded)
-            CourseRow(subject="ENVS", number="100L", title="Laboratory", units=0.0, grade="NG"),
+            CourseRow(
+                subject="ENVS",
+                number="100L",
+                title="Laboratory",
+                units=0.0,
+                grade="NG",
+                source="parsed",
+            ),
         ]
 
         # Only the regular graded courses should count:
@@ -316,7 +578,14 @@ class TestGPACalculator:
 
         for grade, expected_points in test_cases:
             courses = [
-                CourseRow(subject="TEST", number="100", title="Test", units=1.0, grade=grade)
+                CourseRow(
+                    subject="TEST",
+                    number="100",
+                    title="Test",
+                    units=1.0,
+                    grade=grade,
+                    source="parsed",
+                )
             ]
             gpa = self.calculator.calculate_gpa(courses)
             assert (

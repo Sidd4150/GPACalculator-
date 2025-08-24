@@ -93,7 +93,7 @@ The backend provides two main endpoints you'll need to integrate:
 - **URL**: `POST /api/v1/upload`
 - **Purpose**: Upload PDF transcript and get parsed course data
 - **Input**: PDF file via FormData
-- **Output**: Array of course objects with subject, number, title, units, and grade
+- **Output**: Array of course objects with subject, number, title, units, grade, and source
 
 **GPA Calculation Endpoint:**
 - **URL**: `POST /api/v1/gpa` 
@@ -156,7 +156,8 @@ Upload a PDF transcript and receive parsed course data.
     "number": "101",
     "title": "Intro to Computer Science",
     "units": 4.0,
-    "grade": "A"
+    "grade": "A",
+    "source": "parsed"
   }
 ]
 ```
@@ -175,7 +176,8 @@ Calculate GPA from an array of courses.
       "number": "101",
       "title": "Intro to Computer Science", 
       "units": 4.0,
-      "grade": "A"
+      "grade": "A",
+      "source": "parsed"
     }
   ]
 }
