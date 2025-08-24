@@ -58,14 +58,13 @@ python -m black app tests
 3. Create a new "Web Service"
 
 **Step 3: Configure Render deployment**
-- **Build Command**: `pip install -r backend/requirements.txt`
-- **Start Command**: `uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT`
+- Render will auto-detect the Dockerfile and use it for deployment
 - **Environment Variables**:
   - `ENVIRONMENT=production`
   - `CORS_ORIGINS=https://your-frontend-domain.com`
 
 **Step 4: Deploy**
-Push to `main` branch - GitHub Actions will test and Render will deploy automatically.
+Push to `main` branch - Render will automatically build using the Dockerfile.
 
 #### 4. Share API Details with Frontend Developer
 
@@ -234,11 +233,11 @@ python -m black app tests                  # Format code
 gpa-calculator/
 ├── backend/                 # Backend application
 │   ├── app/                # FastAPI application
-│   ├── tests/             # Test suite (100 tests)
+│   ├── tests/             # Test suite
 │   └── requirements.txt   # Python dependencies
-├── Dockerfile            # Container configuration
-├── render.yaml           # Render deployment config
-└── .github/workflows/    # CI/CD pipeline
+├── frontend/              # Future React frontend
+├── Dockerfile            # Docker configuration for Render
+└── README.md             # Project documentation
 ```
 
 ---
