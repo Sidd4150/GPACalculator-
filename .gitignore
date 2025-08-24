@@ -82,6 +82,3 @@ backend/__pycache__/
 
 # Render
 .render/
-
-# Claude
-.claude/
