@@ -21,7 +21,7 @@ class GPACalculator:
         Calculate cumulative GPA from a list of courses.
 
         Args:
-            courses: List of CourseRow objects
+            courses: List of Course objects
 
         Returns:
             GPA rounded to 2 decimal places
@@ -44,7 +44,7 @@ class GPACalculator:
 
         try:
             for course in courses:
-                # Pydantic already validates CourseRow structure and required fields
+                # Pydantic already validates Course structure and required fields
 
                 # Skip courses with non-GPA grades or zero units
                 if course.grade not in GRADE_POINTS or course.units <= 0:

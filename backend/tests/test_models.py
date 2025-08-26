@@ -8,8 +8,8 @@ from pydantic import ValidationError
 from app.models.course import Course
 
 
-class TestCourseRow:
-    """Test cases for CourseRow model validation."""
+class TestCourse:
+    """Test cases for Course model validation."""
 
     def test_source_field_validation(self):
         """Test source field validation."""
@@ -47,7 +47,7 @@ class TestCourseRow:
         assert "Input should be 'parsed' or 'manual'" in str(exc_info.value)
 
     def test_valid_course_row(self):
-        """Test creating a valid CourseRow instance."""
+        """Test creating a valid Course instance."""
         course = Course(
             subject="CS",
             number="101",
@@ -307,7 +307,7 @@ class TestCourseRow:
 
     # Edge cases and combinations
     def test_course_row_serialization(self):
-        """Test that CourseRow can be serialized to dict."""
+        """Test that Course can be serialized to dict."""
         course = Course(
             subject="CS",
             number="101L",
@@ -329,7 +329,7 @@ class TestCourseRow:
         assert course_dict == expected
 
     def test_course_row_from_dict(self):
-        """Test creating CourseRow from dictionary."""
+        """Test creating Course from dictionary."""
         data = {
             "subject": "MATH",
             "number": "201",

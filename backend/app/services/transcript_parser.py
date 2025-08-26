@@ -6,13 +6,7 @@ import re
 from pathlib import Path
 
 import pypdf
-from app.constants import (
-    COURSE_SOURCES,
-    MAX_COURSE_TITLE_LENGTH,
-    MIN_PARSING_QUALITY_RATIO,
-    MIN_SECTION_TEXT_LENGTH,
-    PARSING_ARTIFACTS,
-)
+from app.constants import COURSE_SOURCES, MAX_COURSE_TITLE_LENGTH, PARSING_ARTIFACTS
 from app.exceptions import TranscriptParsingError
 from app.models.course import Course
 from app.utils.logger import setup_logger
@@ -31,19 +25,14 @@ class TranscriptParser:
     """
 
     def __init__(self):
-        """Initialize the parser with regex patterns for course parsing."""
-        # Pattern for completed courses with grades
-        # Matches: SUBJECT NUMBER [UG] TITLE GRADE UNITS QUALITY_POINTS
+        """Initialize the parser with unified regex pattern for course parsing."""
+        # Unified pattern handles both completed and in-progress courses
+        # Completed: SUBJECT NUMBER [UG] TITLE GRADE UNITS QUALITY_POINTS
+        # In-progress: SUBJECT NUMBER UG TITLE UNITS (no grade/quality_points)
         self._course_pattern = re.compile(
-            r"([A-Z]{2,4})\s+(\d+[A-Z]*|\d*XX)\s+(?:UG\s+)?(.+?)\s+"
-            r"([A-Z]+[+-]?|NG|TCR)\s+([\d.]+)\s+([\d.]+)",
+            r"([A-Z]{2,4})\s+(\d+[A-Z]*)\s+(?:UG\s+)?(.+?)\s+"
+            r"(?:([A-Z]+[+-]?|NG|TCR)\s+)?([\d.]+)(?:\s+([\d.]+))?",
             re.MULTILINE | re.DOTALL,
-        )
-
-        # Pattern for courses in progress (no final grade)
-        # Matches: SUBJECT NUMBER UG TITLE UNITS
-        self._progress_pattern = re.compile(
-            r"([A-Z]{2,4})\s+(\d+[A-Z]*|\d*XX)\s+UG\s+(.+?)\s+([\d.]+)$", re.MULTILINE
         )
 
     def extract_text(self, pdf_path: str) -> str:
@@ -108,11 +97,6 @@ class TranscriptParser:
             logger.error("No text extracted from PDF")
             raise TranscriptParsingError("No text could be extracted from the PDF file")
 
-        # Basic transcript validation
-        if "TRANSCRIPT" not in text.upper() and "ACADEMIC" not in text.upper():
-            logger.warning("PDF may not be a transcript - missing expected keywords")
-            # Don't raise error here, as some transcripts might not have these exact words
-
         return text
 
     def identify_sections(self, text: str) -> dict[str, str]:
@@ -127,231 +111,97 @@ class TranscriptParser:
         """
         sections = {}
 
-        # Find transfer credit section
-        transfer_start = re.search(r"TRANSFER CREDIT ACCEPTED BY INSTITUTION", text)
-        if transfer_start:
-            # Find the end of transfer section - look for "INSTITUTION CREDIT"
-            institution_start = re.search(r"INSTITUTION CREDIT\s+.*?-Top-", text)
-            if institution_start:
-                sections["transfer_credit"] = text[
-                    transfer_start.start() : institution_start.start()
-                ]
+        # Define section markers in order
+        section_markers = [
+            ("TRANSFER CREDIT ACCEPTED BY INSTITUTION", "transfer_credit"),
+            ("INSTITUTION CREDIT", "institution_credit"),
+            ("COURSES IN PROGRESS", "courses_in_progress"),
+        ]
+
+        # Find all section positions
+        section_positions = []
+        for marker, key in section_markers:
+            match = re.search(marker, text)
+            if match:
+                section_positions.append((match.start(), key))
+
+        # Sort by position and extract sections
+        section_positions.sort()
+
+        for i, (start_pos, key) in enumerate(section_positions):
+            # Find end position (next section start or end of relevant content)
+            if i + 1 < len(section_positions):
+                end_pos = section_positions[i + 1][0]
             else:
-                # Fallback - look for just "INSTITUTION CREDIT"
-                institution_start = re.search(r"INSTITUTION CREDIT", text)
-                if institution_start:
-                    sections["transfer_credit"] = text[
-                        transfer_start.start() : institution_start.start()
-                    ]
+                # Last section - end at copyright or end of document
+                copyright_match = re.search(r"© 20\d\d Ellucian", text[start_pos:])
+                if copyright_match:
+                    end_pos = start_pos + copyright_match.start()
                 else:
-                    sections["transfer_credit"] = text[transfer_start.start() :]
-        else:
-            sections["transfer_credit"] = ""
+                    end_pos = len(text)
 
-        # Find institution credit section
-        institution_start = re.search(r"INSTITUTION CREDIT", text)
-        if institution_start:
-            # Find end of institution section
-            # Look for "COURSES IN PROGRESS" or "TRANSCRIPT TOTALS"
-            progress_start = re.search(r"COURSES IN PROGRESS\s+.*?-Top-", text)
-            totals_start = re.search(r"TRANSCRIPT TOTALS", text)
+            sections[key] = text[start_pos:end_pos]
 
-            end_pos = None
-            if progress_start and totals_start:
-                end_pos = min(progress_start.start(), totals_start.start())
-            elif progress_start:
-                end_pos = progress_start.start()
-            elif totals_start:
-                end_pos = totals_start.start()
-
-            if end_pos:
-                sections["institution_credit"] = text[
-                    institution_start.start() : end_pos
-                ]
-            else:
-                sections["institution_credit"] = text[institution_start.start() :]
-        else:
-            sections["institution_credit"] = ""
-
-        # Find courses in progress section
-        progress_start = re.search(r"COURSES IN PROGRESS\s+.*?-Top-", text)
-        if progress_start:
-            # Progress section goes to end of document or copyright info
-            copyright_start = re.search(r"© 20\d\d Ellucian", text)
-
-            if copyright_start:
-                sections["courses_in_progress"] = text[
-                    progress_start.start() : copyright_start.start()
-                ]
-            else:
-                sections["courses_in_progress"] = text[progress_start.start() :]
-        else:
-            sections["courses_in_progress"] = ""
+        # Ensure all sections exist (empty if not found)
+        for _, key in section_markers:
+            if key not in sections:
+                sections[key] = ""
 
         return sections
 
-    def _preprocess_section_text(self, text: str) -> str:
-        """
-        Preprocess section text to fix spacing issues that cause parsing problems.
-
-        Handles cases where PDF extraction creates malformed text like "SpanishA"
-        instead of "Spanish A", which causes regex cross-matching issues.
-
-        Args:
-            text: Raw section text
-
-        Returns:
-            Preprocessed text with fixed spacing
-        """
-        # Fix missing spaces between course titles and grades
-        # Pattern: lowercase letter + uppercase grade + units/points
-        text = re.sub(r"([a-z])([A-Z]+[+-]?)(\s+[\d.]+\s+[\d.]+)", r"\1 \2\3", text)
-        return text
-
-    def parse_section_courses(
-        self, section_text: str, section_name: str
-    ) -> list[Course]:
+    def parse_section_courses(self, section_text: str) -> list[Course]:
         """
         Parse all courses from a transcript section.
 
         Args:
             section_text: Text content of a transcript section
-            section_name: Name of the section (for logging/debugging)
 
         Returns:
-            List of CourseRow objects
+            List of Course objects
         """
         courses = []
 
-        # Preprocess text to fix spacing issues that cause parsing problems
-        processed_text = self._preprocess_section_text(section_text)
+        # Fix spacing issues inline (handles "SpanishA" -> "Spanish A" case)
+        processed_text = re.sub(
+            r"([a-z])([A-Z]+[+-]?)(\s+[\d.]+\s+[\d.]+)", r"\1 \2\3", section_text
+        )
 
-        # Parse completed courses with grades
-        courses.extend(self._parse_completed_courses(processed_text))
-
-        # Handle courses in progress (no final grade)
-        if section_name == "COURSES IN PROGRESS":
-            courses.extend(self._parse_progress_courses(section_text))
-
-        return courses
-
-    def _parse_completed_courses(self, text: str) -> list[Course]:
-        """
-        Parse completed courses with grades from preprocessed text.
-
-        Args:
-            text: Preprocessed section text
-
-        Returns:
-            List of CourseRow objects for completed courses
-        """
-        courses = []
-        matches = self._course_pattern.findall(text)
+        # Use unified pattern to parse all courses
+        matches = self._course_pattern.findall(processed_text)
 
         for match in matches:
             subject, number, title, grade, units, _ = match
-            title = title.strip()
 
-            # Skip obvious parsing errors
-            if "Term Totals" in title:
+            # Clean title inline instead of separate pass
+            title = self._clean_title_inline(title)
+
+            # Skip obvious parsing errors or empty titles
+            if "Term Totals" in title or not title:
                 continue
 
-            course = self._create_course_row(subject, number, title, grade, units)
-            if course:
-                courses.append(course)
+            # If no grade was captured, it's an in-progress course
+            if not grade:
+                grade = "IP"
 
-        return courses
-
-    def _parse_progress_courses(self, text: str) -> list[Course]:
-        """
-        Parse courses in progress (no final grade) from section text.
-
-        Args:
-            text: Raw section text
-
-        Returns:
-            List of CourseRow objects for in-progress courses
-        """
-        courses = []
-        matches = self._progress_pattern.findall(text)
-
-        for match in matches:
-            subject, number, title, units = match
-            course = self._create_course_row(
-                subject, number, title.strip(), "IP", units
-            )
-            if course:
-                courses.append(course)
-
-        return courses
-
-    def _create_course_row(
-        self, subject: str, number: str, title: str, grade: str, units: str
-    ) -> Course | None:
-        """
-        Create a CourseRow object with validation.
-
-        Args:
-            subject: Course subject code
-            number: Course number
-            title: Course title
-            grade: Course grade
-            units: Course units as string
-
-        Returns:
-            CourseRow object or None if creation fails
-        """
-        try:
-            return Course(
-                subject=subject,
-                number=number,
-                title=title,
-                units=float(units),
-                grade=grade,
-                source=COURSE_SOURCES["PARSED"],
-            )
-        except (ValueError, TypeError, AttributeError):
-            return None
-
-    def _clean_and_enhance_courses(self, courses: list[Course]) -> list[Course]:
-        """
-        Clean and enhance parsed courses with specific USF transcript rules.
-
-        Args:
-            courses: List of parsed CourseRow objects
-
-        Returns:
-            List of cleaned and enhanced CourseRow objects
-        """
-        cleaned_courses = []
-
-        for course in courses:
-            clean_title = self._clean_course_title(course.title)
-
-            # Skip courses with empty titles after cleaning
-            if not clean_title:
-                continue
-
-            # Create cleaned course - preserve the original source
             try:
-                cleaned_course = Course(
-                    subject=course.subject,
-                    number=course.number,
-                    title=clean_title,
-                    units=course.units,
-                    grade=course.grade,
-                    source=course.source,
+                course = Course(
+                    subject=subject,
+                    number=number,
+                    title=title,
+                    units=float(units),
+                    grade=grade,
+                    source=COURSE_SOURCES["PARSED"],
                 )
-            except (ValueError, TypeError, AttributeError):
-                cleaned_course = None
-            if cleaned_course:
-                cleaned_courses.append(cleaned_course)
+                courses.append(course)
+            except ValueError as e:
+                logger.debug("Skipping course with invalid units: %s", e)
+                continue
 
-        return cleaned_courses
+        return courses
 
-    def _clean_course_title(self, title: str) -> str:
+    def _clean_title_inline(self, title: str) -> str:
         """
-        Clean up course title by removing parsing artifacts and normalizing whitespace.
+        Clean course title inline during parsing.
 
         Args:
             title: Raw course title
@@ -359,49 +209,20 @@ class TranscriptParser:
         Returns:
             Cleaned course title
         """
-        clean_title = title
+        title = title.strip()
 
         # Remove common parsing artifacts
         for artifact in PARSING_ARTIFACTS:
-            clean_title = re.sub(
-                artifact, "", clean_title, flags=re.IGNORECASE | re.DOTALL
-            )
+            title = re.sub(artifact, "", title, flags=re.IGNORECASE | re.DOTALL)
 
         # Clean up extra whitespace
-        clean_title = re.sub(r"\s+", " ", clean_title).strip()
+        title = re.sub(r"\s+", " ", title).strip()
 
         # Truncate overly long titles (likely parsing errors)
-        if len(clean_title) > MAX_COURSE_TITLE_LENGTH:
-            clean_title = clean_title[:MAX_COURSE_TITLE_LENGTH].strip()
+        if len(title) > MAX_COURSE_TITLE_LENGTH:
+            title = title[:MAX_COURSE_TITLE_LENGTH].strip()
 
-        return clean_title
-
-    def _validate_parsing_results(self, courses: list[Course]) -> None:
-        """
-        Validate parsing results and raise TranscriptParsingError if quality is too low.
-
-        Args:
-            courses: List of parsed courses
-
-        Raises:
-            TranscriptParsingError: If no courses found or parsing quality is too low
-        """
-        if not courses:
-            logger.error("No courses found in transcript")
-            raise TranscriptParsingError("No courses were found in the transcript")
-
-        # Validate course quality - at least 80% should be complete
-        valid_courses = [c for c in courses if c.subject and c.number and c.title]
-
-        quality_ratio = len(valid_courses) / len(courses)
-        if quality_ratio < MIN_PARSING_QUALITY_RATIO:
-            logger.warning(
-                "Low quality parsing: %d/%d courses are valid (%.1f%%)",
-                len(valid_courses),
-                len(courses),
-                quality_ratio * 100,
-            )
-            raise TranscriptParsingError("Transcript format may not be supported")
+        return title
 
     def parse_transcript(self, pdf_path: str) -> list[Course]:
         """
@@ -411,7 +232,7 @@ class TranscriptParser:
             pdf_path: Path to the PDF transcript file
 
         Returns:
-            List of all CourseRow objects from the transcript
+            List of all Course objects from the transcript
 
         Raises:
             FileNotFoundError: If PDF file doesn't exist
@@ -426,11 +247,6 @@ class TranscriptParser:
             # Identify sections
             sections = self.identify_sections(text)
 
-            # Validate that we found expected sections
-            total_section_length = sum(len(section) for section in sections.values())
-            if total_section_length < MIN_SECTION_TEXT_LENGTH:  # Very basic validation
-                logger.warning("Transcript sections seem unusually short")
-
             all_courses = []
 
             # Parse each section
@@ -443,34 +259,26 @@ class TranscriptParser:
             for section_key, section_name in section_parsers:
                 if sections[section_key]:
                     try:
-                        courses = self.parse_section_courses(
-                            sections[section_key], section_name
-                        )
+                        courses = self.parse_section_courses(sections[section_key])
                         all_courses.extend(courses)
                         logger.debug(
                             "Parsed %d courses from %s section",
                             len(courses),
                             section_name,
                         )
-                    except (ValueError, AttributeError, TypeError) as e:
+                    except Exception as e:
                         logger.error("Error parsing %s section: %s", section_name, e)
                         # Continue processing other sections
 
-            # Clean and enhance the courses
-            try:
-                cleaned_courses = self._clean_and_enhance_courses(all_courses)
-            except (ValueError, AttributeError, TypeError) as e:
-                logger.error("Error cleaning courses: %s", e)
-                # Return uncleaned courses rather than failing completely
-                cleaned_courses = all_courses
-
-            # Final validation and logging
-            self._validate_parsing_results(cleaned_courses)
+            # Simple validation - ensure we found some courses
+            if not all_courses:
+                logger.error("No courses found in transcript")
+                raise TranscriptParsingError("No courses were found in the transcript")
 
             logger.info(
-                "Successfully parsed %d courses from transcript", len(cleaned_courses)
+                "Successfully parsed %d courses from transcript", len(all_courses)
             )
-            return cleaned_courses
+            return all_courses
 
         except (TranscriptParsingError, FileNotFoundError, ValueError, OSError):
             raise

@@ -96,6 +96,3 @@ PARSING_ARTIFACTS = [
     r"Subject.*$",
 ]
 
-# Parser validation constants
-MIN_PARSING_QUALITY_RATIO = 0.8
-MIN_SECTION_TEXT_LENGTH = 100

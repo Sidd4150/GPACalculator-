@@ -57,7 +57,7 @@ Full-stack GPA calculator for parsing USF transcript PDFs and calculating GPA.
 - POST /api/v1/upload - accepts PDF, returns parsed courses
 - POST /api/v1/gpa - accepts course list, returns cumulative GPA
 - GET /api/v1/health - health check endpoint
-- CourseRow: {subject, number, title, units, grade, source}
+- Course: {subject, number, title, units, grade, source}
   - source: "parsed" (from transcript) or "manual" (user-added)
 
 ## Testing Strategy

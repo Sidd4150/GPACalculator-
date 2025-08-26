@@ -175,7 +175,7 @@ def calculate_gpa(
     """
 
     try:
-        # Calculate GPA directly (Pydantic already validates CourseRow structure)
+        # Calculate GPA directly (Pydantic already validates Course structure)
         gpa = gpa_calculator.calculate_gpa(gpa_request.courses)
 
         return gpa
