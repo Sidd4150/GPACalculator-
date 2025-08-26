@@ -588,6 +588,6 @@ class TestGPACalculator:
                 )
             ]
             gpa = self.calculator.calculate_gpa(courses)
-            assert (
-                gpa == expected_points
-            ), f"Grade {grade} should map to {expected_points} points, got {gpa}"
+            assert gpa == expected_points, (
+                f"Grade {grade} should map to {expected_points} points, got {gpa}"
+            )

@@ -3,6 +3,7 @@ Test configuration and fixtures for the GPA calculator tests.
 """
 
 import os
+
 import pytest
 
 

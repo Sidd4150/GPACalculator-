@@ -5,25 +5,26 @@ API endpoints for GPA calculator.
 import os
 import tempfile
 from functools import lru_cache
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from app.config import Settings, get_settings
-from app.exceptions import TranscriptParsingError
-from app.models.course import Course
-from app.services.gpa_calculator import GPACalculator
-from app.services.parser import TranscriptParser
-from app.utils.file_validator import FileValidator
-from app.utils.logger import setup_logger
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from pydantic import BaseModel
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
+from app.config import Settings, get_settings
+from app.exceptions import TranscriptParsingError
+from app.models.course import Course
+from app.services.gpa_calculator import GPACalculator
+from app.services.transcript_parser import TranscriptParser
+from app.utils.file_validator import FileValidator
+from app.utils.logger import setup_logger
+
 logger = setup_logger("api")
 
 
 # Cached settings for performance
-@lru_cache()
+@lru_cache
 def get_cached_settings() -> Settings:
     """Get cached settings instance."""
     return get_settings()
@@ -46,7 +47,7 @@ def get_file_validator() -> FileValidator:
 
 
 # Initialize rate limiter - disable in test environment
-def get_rate_limiter_key(request: Request) -> Optional[str]:
+def get_rate_limiter_key(request: Request) -> str | None:
     """Get rate limiter key, but skip in test environment."""
     if os.getenv("TESTING", "false").lower() == "true":
         return None  # No rate limiting during tests
@@ -61,7 +62,7 @@ router = APIRouter()
 class CoursesRequest(BaseModel):
     """Request model for GPA calculation."""
 
-    courses: List[Course]
+    courses: list[Course]
 
 
 @router.post("/upload")
@@ -71,7 +72,7 @@ async def upload_transcript(
     file: UploadFile = File(...),
     file_validator: FileValidator = Depends(get_file_validator),
     parser: TranscriptParser = Depends(get_transcript_parser),
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Upload and parse a PDF transcript file.
 
@@ -193,7 +194,7 @@ def calculate_gpa(
 
 
 @router.get("/health")
-def health_check() -> Dict[str, str]:
+def health_check() -> dict[str, str]:
     """Health check endpoint."""
     settings = get_cached_settings()
     return {

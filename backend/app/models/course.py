@@ -8,17 +8,17 @@ from typing import Literal
 from pydantic import BaseModel, Field, field_validator
 
 from ..constants import (
+    COURSE_NUMBER_PATTERN,
     COURSE_SOURCES,
     COURSE_SUBJECT_PATTERN,
-    COURSE_NUMBER_PATTERN,
     GRADE_POINTS,
-    NON_GPA_GRADES,
-    MIN_COURSE_SUBJECT_LENGTH,
     MAX_COURSE_SUBJECT_LENGTH,
-    MIN_COURSE_UNITS,
-    MAX_COURSE_UNITS,
-    MIN_COURSE_TITLE_LENGTH,
     MAX_COURSE_TITLE_LENGTH,
+    MAX_COURSE_UNITS,
+    MIN_COURSE_SUBJECT_LENGTH,
+    MIN_COURSE_TITLE_LENGTH,
+    MIN_COURSE_UNITS,
+    NON_GPA_GRADES,
 )
 
 
@@ -27,7 +27,7 @@ class Course(BaseModel):
     Model representing a single course from a USF transcript.
 
     Attributes:
-        subject: Course subject code (2-6 uppercase letters, e.g., 'CS', 'MATH')
+        subject: Course subject code (2-4 uppercase letters, e.g., 'CS', 'MATH')
         number: Course number (digits optionally followed by single letter, e.g., '101', '101L')
         title: Course title (non-empty string)
         units: Credit units (positive number)

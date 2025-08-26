@@ -2,8 +2,6 @@
 GPA Calculator service for computing Grade Point Average from course data.
 """
 
-from typing import List
-
 from app.constants import GPA_PRECISION_DIGITS, GRADE_POINTS
 from app.models.course import Course
 from app.utils.logger import setup_logger
@@ -18,7 +16,7 @@ class GPACalculator:
     Handles USF grading scale and excludes non-GPA courses from calculations.
     """
 
-    def calculate_gpa(self, courses: List[Course]) -> float:
+    def calculate_gpa(self, courses: list[Course]) -> float:
         """
         Calculate cumulative GPA from a list of courses.
 

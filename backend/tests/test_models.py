@@ -3,8 +3,9 @@ Tests for Pydantic models.
 """
 
 import pytest
-from app.models.course import Course
 from pydantic import ValidationError
+
+from app.models.course import Course
 
 
 class TestCourseRow:

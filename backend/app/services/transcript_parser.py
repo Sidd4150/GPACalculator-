@@ -4,9 +4,9 @@ PDF transcript parser for USF transcripts.
 
 import re
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import pypdf
+
 from app.constants import (
     COURSE_SOURCES,
     MAX_COURSE_TITLE_PARSE_LENGTH,
@@ -36,7 +36,7 @@ class TranscriptParser:
         # Pattern for completed courses with grades
         # Matches: SUBJECT NUMBER [UG] TITLE GRADE UNITS QUALITY_POINTS
         self._course_pattern = re.compile(
-            r"([A-Z]{2,6})\s+(\d+[A-Z]*|\d*XX)\s+(?:UG\s+)?(.+?)\s+"
+            r"([A-Z]{2,4})\s+(\d+[A-Z]*|\d*XX)\s+(?:UG\s+)?(.+?)\s+"
             r"([A-Z]+[+-]?|NG|TCR)\s+([\d.]+)\s+([\d.]+)",
             re.MULTILINE | re.DOTALL,
         )
@@ -44,7 +44,7 @@ class TranscriptParser:
         # Pattern for courses in progress (no final grade)
         # Matches: SUBJECT NUMBER UG TITLE UNITS
         self._progress_pattern = re.compile(
-            r"([A-Z]{2,6})\s+(\d+[A-Z]*|\d*XX)\s+UG\s+(.+?)\s+([\d.]+)$", re.MULTILINE
+            r"([A-Z]{2,4})\s+(\d+[A-Z]*|\d*XX)\s+UG\s+(.+?)\s+([\d.]+)$", re.MULTILINE
         )
 
     def extract_text(self, pdf_path: str) -> str:
@@ -100,7 +100,7 @@ class TranscriptParser:
         except pypdf.errors.PdfReadError as e:
             logger.error("PDF read error: %s", e)
             raise ValueError(f"PDF file is corrupted or invalid: {str(e)}") from e
-        except (OSError, IOError) as e:
+        except OSError as e:
             logger.error("Error reading PDF file: %s", e)
             raise OSError(f"Error reading PDF file: {str(e)}") from e
 
@@ -116,7 +116,7 @@ class TranscriptParser:
 
         return text
 
-    def identify_sections(self, text: str) -> Dict[str, str]:
+    def identify_sections(self, text: str) -> dict[str, str]:
         """
         Identify and extract the three main transcript sections.
 
@@ -211,7 +211,7 @@ class TranscriptParser:
 
     def parse_section_courses(
         self, section_text: str, section_name: str
-    ) -> List[Course]:
+    ) -> list[Course]:
         """
         Parse all courses from a transcript section.
 
@@ -236,7 +236,7 @@ class TranscriptParser:
 
         return courses
 
-    def _parse_completed_courses(self, text: str) -> List[Course]:
+    def _parse_completed_courses(self, text: str) -> list[Course]:
         """
         Parse completed courses with grades from preprocessed text.
 
@@ -263,7 +263,7 @@ class TranscriptParser:
 
         return courses
 
-    def _parse_progress_courses(self, text: str) -> List[Course]:
+    def _parse_progress_courses(self, text: str) -> list[Course]:
         """
         Parse courses in progress (no final grade) from section text.
 
@@ -288,7 +288,7 @@ class TranscriptParser:
 
     def _create_course_row(
         self, subject: str, number: str, title: str, grade: str, units: str
-    ) -> Optional[Course]:
+    ) -> Course | None:
         """
         Create a CourseRow object with validation.
 
@@ -314,7 +314,7 @@ class TranscriptParser:
         except (ValueError, TypeError, AttributeError):
             return None
 
-    def _clean_and_enhance_courses(self, courses: List[Course]) -> List[Course]:
+    def _clean_and_enhance_courses(self, courses: list[Course]) -> list[Course]:
         """
         Clean and enhance parsed courses with specific USF transcript rules.
 
@@ -377,7 +377,7 @@ class TranscriptParser:
 
         return clean_title
 
-    def _validate_parsing_results(self, courses: List[Course]) -> None:
+    def _validate_parsing_results(self, courses: list[Course]) -> None:
         """
         Validate parsing results and raise TranscriptParsingError if quality is too low.
 
@@ -404,7 +404,7 @@ class TranscriptParser:
             )
             raise TranscriptParsingError("Transcript format may not be supported")
 
-    def parse_transcript(self, pdf_path: str) -> List[Course]:
+    def parse_transcript(self, pdf_path: str) -> list[Course]:
         """
         Parse complete transcript PDF and return all courses.
 

@@ -30,22 +30,22 @@ class TestAPIEndpoints:
             files = {"file": ("Academic Transcript.pdf", pdf_file, "application/pdf")}
             response = self.client.post("/api/v1/upload", files=files)
 
-        assert (
-            response.status_code == 200
-        ), f"Expected 200, got {response.status_code}: {response.text}"
+        assert response.status_code == 200, (
+            f"Expected 200, got {response.status_code}: {response.text}"
+        )
 
         data = response.json()
         assert isinstance(data, list), "Response should be a list of courses"
-        assert (
-            len(data) == 44
-        ), f"Should parse exactly 44 courses from Academic Transcript.pdf, got {len(data)}"
+        assert len(data) == 44, (
+            f"Should parse exactly 44 courses from Academic Transcript.pdf, got {len(data)}"
+        )
 
         # Validate course structure
         course = data[0]
         required_fields = {"subject", "number", "title", "units", "grade", "source"}
-        assert all(
-            field in course for field in required_fields
-        ), f"Course missing required fields: {course}"
+        assert all(field in course for field in required_fields), (
+            f"Course missing required fields: {course}"
+        )
 
         # Check that we have different types of courses
         grades = {course["grade"] for course in data}
@@ -62,9 +62,9 @@ class TestAPIEndpoints:
         assert response.status_code == 400, f"Expected 400, got {response.status_code}"
         data = response.json()
         assert "detail" in data, "Error response should contain 'detail' key"
-        assert (
-            "PDF" in data["detail"] or "pdf" in data["detail"]
-        ), f"Error should mention PDF: {data['detail']}"
+        assert "PDF" in data["detail"] or "pdf" in data["detail"], (
+            f"Error should mention PDF: {data['detail']}"
+        )
 
     def test_upload_invalid_file_type_image(self):
         """Test /upload endpoint with invalid file type (image)."""
@@ -77,9 +77,9 @@ class TestAPIEndpoints:
         assert response.status_code == 400, f"Expected 400, got {response.status_code}"
         data = response.json()
         assert "detail" in data, "Error response should contain 'detail' key"
-        assert (
-            "PDF" in data["detail"] or "pdf" in data["detail"]
-        ), f"Error should mention PDF: {data['detail']}"
+        assert "PDF" in data["detail"] or "pdf" in data["detail"], (
+            f"Error should mention PDF: {data['detail']}"
+        )
 
     def test_upload_no_file(self):
         """Test /upload endpoint with no file provided."""
@@ -141,9 +141,9 @@ class TestAPIEndpoints:
 
         response = self.client.post("/api/v1/gpa", json=courses_payload)
 
-        assert (
-            response.status_code == 200
-        ), f"Expected 200, got {response.status_code}: {response.text}"
+        assert response.status_code == 200, (
+            f"Expected 200, got {response.status_code}: {response.text}"
+        )
 
         gpa = response.json()
         assert isinstance(gpa, float), f"Response should be a float, got {type(gpa)}"
@@ -192,9 +192,9 @@ class TestAPIEndpoints:
 
         response = self.client.post("/api/v1/gpa", json=courses_payload)
 
-        assert (
-            response.status_code == 200
-        ), f"Expected 200, got {response.status_code}: {response.text}"
+        assert response.status_code == 200, (
+            f"Expected 200, got {response.status_code}: {response.text}"
+        )
 
         gpa = response.json()
 
@@ -207,9 +207,9 @@ class TestAPIEndpoints:
 
         response = self.client.post("/api/v1/gpa", json=courses_payload)
 
-        assert (
-            response.status_code == 200
-        ), f"Expected 200, got {response.status_code}: {response.text}"
+        assert response.status_code == 200, (
+            f"Expected 200, got {response.status_code}: {response.text}"
+        )
 
         gpa = response.json()
         assert gpa == 0.0, f"Expected GPA 0.0 for empty list, got {gpa}"
@@ -354,9 +354,9 @@ class TestAPIEndpoints:
 
         # All should succeed
         for response in responses:
-            assert (
-                response.status_code == 200
-            ), f"Concurrent request failed: {response.status_code}"
+            assert response.status_code == 200, (
+                f"Concurrent request failed: {response.status_code}"
+            )
             gpa = response.json()
             assert gpa == 4.0, f"Expected GPA 4.0, got {gpa}"
 
@@ -379,9 +379,9 @@ class TestAPIEndpoints:
         response = self.client.post("/api/v1/gpa", json=courses_payload)
 
         # Should succeed and include CORS headers (handled by FastAPI middleware)
-        assert (
-            response.status_code == 200
-        ), f"CORS-enabled request failed: {response.status_code}"
+        assert response.status_code == 200, (
+            f"CORS-enabled request failed: {response.status_code}"
+        )
 
     def test_response_content_type(self):
         """Test that responses have correct Content-Type headers."""
@@ -401,6 +401,6 @@ class TestAPIEndpoints:
         response = self.client.post("/api/v1/gpa", json=courses_payload)
 
         assert response.status_code == 200
-        assert "application/json" in response.headers.get(
-            "content-type", ""
-        ), "Response should be JSON"
+        assert "application/json" in response.headers.get("content-type", ""), (
+            "Response should be JSON"
+        )

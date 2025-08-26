@@ -3,7 +3,7 @@ Simple configuration for the GPA Calculator application.
 """
 
 import os
-from typing import List, Union
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,7 +17,7 @@ class Settings(BaseSettings):
 
     # Environment-specific settings (defaults provided, override via env vars)
     environment: str = "development"
-    cors_origins: Union[str, List[str]] = [
+    cors_origins: str | list[str] = [
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:5173",  # Vite default
@@ -42,7 +42,7 @@ class Settings(BaseSettings):
         return self.max_file_size_mb * 1024 * 1024
 
     @property
-    def cors_origins_list(self) -> List[str]:
+    def cors_origins_list(self) -> list[str]:
         """Get CORS origins as a list, handling both string and list types."""
         if isinstance(self.cors_origins, str):
             return [

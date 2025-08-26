@@ -42,6 +42,14 @@ cd backend
 # Run all tests
 python -m pytest tests/ -v
 
+# Format code
+ruff format
+
+# Lint and auto-fix issues
+ruff check --fix
+
+# Type checking
+mypy app/
 ```
 
 #### 3. Deploy Backend to Production
@@ -194,7 +202,9 @@ Calculate GPA from an array of courses.
 cd backend
 python -m uvicorn app.main:app --reload    # Start dev server
 python -m pytest tests/ -v                # Run tests  
-python -m black app tests                  # Format code
+ruff format                               # Format code
+ruff check --fix                          # Lint and auto-fix
+mypy app/                                 # Type checking
 ```
 
 ### Configuration

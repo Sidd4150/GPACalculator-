@@ -2,8 +2,6 @@
 File validation for the GPA Calculator application.
 """
 
-from typing import Optional
-
 from fastapi import UploadFile
 
 from app.config import Settings
@@ -31,13 +29,13 @@ class FileValidator:
         self._validate_content_type(file.content_type)
 
     def validate_file_content(
-        self, content: bytes, filename: Optional[str] = None
+        self, content: bytes, filename: str | None = None
     ) -> None:
         """Validate file content after reading."""
         self._validate_file_size(len(content), filename)
         self._validate_pdf_content(content, filename)
 
-    def _validate_filename(self, filename: Optional[str]) -> None:
+    def _validate_filename(self, filename: str | None) -> None:
         """Validate filename is present and has correct extension."""
         if not filename:
             logger.warning("Upload attempt with no filename")
@@ -47,7 +45,7 @@ class FileValidator:
             logger.warning("Invalid file extension: %s", filename)
             raise ValueError(ERROR_MESSAGES["INVALID_FILE_TYPE"])
 
-    def _validate_content_type(self, content_type: Optional[str]) -> None:
+    def _validate_content_type(self, content_type: str | None) -> None:
         """Validate MIME type if provided."""
         if content_type and not any(
             content_type.startswith(mime) for mime in SUPPORTED_MIME_TYPES
@@ -55,7 +53,7 @@ class FileValidator:
             logger.warning("Invalid content type: %s", content_type)
             raise ValueError(ERROR_MESSAGES["INVALID_FILE_TYPE"])
 
-    def _validate_file_size(self, size: int, filename: Optional[str] = None) -> None:
+    def _validate_file_size(self, size: int, filename: str | None = None) -> None:
         """Validate file size is within limits."""
         if size == 0:
             logger.warning("Empty file uploaded: %s", filename)
@@ -68,7 +66,7 @@ class FileValidator:
             )
 
     def _validate_pdf_content(
-        self, content: bytes, filename: Optional[str] = None
+        self, content: bytes, filename: str | None = None
     ) -> None:
         """Validate PDF content structure."""
         if not content.startswith(PDF_HEADER_SIGNATURE):

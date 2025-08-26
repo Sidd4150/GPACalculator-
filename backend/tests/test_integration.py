@@ -33,29 +33,29 @@ class TestEndToEndIntegration:
             files = {"file": ("Academic Transcript.pdf", pdf_file, "application/pdf")}
             upload_response = self.client.post("/api/v1/upload", files=files)
 
-        assert (
-            upload_response.status_code == 200
-        ), f"Upload failed: {upload_response.text}"
+        assert upload_response.status_code == 200, (
+            f"Upload failed: {upload_response.text}"
+        )
         courses = upload_response.json()
 
         # Verify expected number of courses
-        assert (
-            len(courses) == self.expected_total_courses
-        ), f"Expected {self.expected_total_courses} courses, got {len(courses)}"
+        assert len(courses) == self.expected_total_courses, (
+            f"Expected {self.expected_total_courses} courses, got {len(courses)}"
+        )
 
         # Calculate GPA using parsed courses
         gpa_payload = {"courses": courses}
         gpa_response = self.client.post("/api/v1/gpa", json=gpa_payload)
 
-        assert (
-            gpa_response.status_code == 200
-        ), f"GPA calculation failed: {gpa_response.text}"
+        assert gpa_response.status_code == 200, (
+            f"GPA calculation failed: {gpa_response.text}"
+        )
         gpa = gpa_response.json()
 
         # Verify GPA is close to expected (within 0.01)
-        assert (
-            abs(gpa - self.expected_gpa) < 0.01
-        ), f"Expected GPA ~{self.expected_gpa}, got {gpa}"
+        assert abs(gpa - self.expected_gpa) < 0.01, (
+            f"Expected GPA ~{self.expected_gpa}, got {gpa}"
+        )
 
     def test_course_parsing_accuracy(self):
         """Test that specific known courses are parsed correctly."""
@@ -68,19 +68,19 @@ class TestEndToEndIntegration:
 
         # Verify key course types are present
         assert "HIST_120" in course_dict, "Transfer credit course missing"
-        assert (
-            course_dict["HIST_120"]["grade"] == "TCR"
-        ), "Transfer credit grade incorrect"
+        assert course_dict["HIST_120"]["grade"] == "TCR", (
+            "Transfer credit grade incorrect"
+        )
 
         assert "CS_110" in course_dict, "Institution course missing"
-        assert (
-            course_dict["CS_110"]["grade"] == "A+"
-        ), "Institution course grade incorrect"
+        assert course_dict["CS_110"]["grade"] == "A+", (
+            "Institution course grade incorrect"
+        )
 
         assert "CS_256" in course_dict, "In-progress course missing"
-        assert (
-            course_dict["CS_256"]["grade"] == "IP"
-        ), "In-progress course grade incorrect"
+        assert course_dict["CS_256"]["grade"] == "IP", (
+            "In-progress course grade incorrect"
+        )
 
     def test_gpa_calculation_excludes_non_gpa_courses(self):
         """Test that GPA calculation properly excludes non-GPA courses."""

@@ -10,8 +10,9 @@ Full-stack GPA calculator for parsing USF transcript PDFs and calculating GPA.
 - Run server: `uvicorn backend.app.main:app --reload`
 - Run tests: `cd backend && pytest -v`
 - Run specific test: `cd backend && pytest tests/test_parser.py -v`
-- Format code: `cd backend && black .`
-- Lint: `cd backend && pylint app/`
+- Format code: `cd backend && ruff format`
+- Lint & fix: `cd backend && ruff check --fix`
+- Type check: `cd backend && mypy app/`
 
 ## Project Structure
 ```
