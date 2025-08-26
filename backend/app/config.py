@@ -32,10 +32,6 @@ class Settings(BaseSettings):
     rate_limit_upload: int = 10  # requests per minute
     rate_limit_gpa: int = 50  # requests per minute
 
-    # Development constants (hardcoded)
-    rate_limit_storage_uri: str = "memory://"  # For development/testing
-    default_retry_after: int = 60  # seconds
-
     @property
     def max_file_size_bytes(self) -> int:
         """Get max file size in bytes."""
