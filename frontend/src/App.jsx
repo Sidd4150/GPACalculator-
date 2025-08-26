@@ -1,57 +1,85 @@
-
 import './App.css'
 import { useState } from 'react'
 
 function App() {
-
   const [file, setFile] = useState(null);
-  const [courses, setCourses] = useState([])
-  const [gpa, setGpa] = useState(null)
+  const [courses, setCourses] = useState([]);
+  const [gpa, setGpa] = useState(null);
 
+  // Upload transcript file
+  const uploadTranscript = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
 
+    const res = await fetch("http://localhost:8000/api/v1/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
+    return res.json(); // transcript data
+  };
+
+  // Calculate GPA
+  const fetchGPA = async (courses) => {
+    const res = await fetch("http://localhost:8000/api/v1/gpa", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ courses }),
+    });
+
+    if (!res.ok) throw new Error(`GPA fetch failed: ${res.status}`);
+    return res.json(); // gpa value
+  };
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
   };
 
-
   const handleUpload = async () => {
     if (!file) {
-      alert("Please provide a file")
+      alert("Please provide a file");
+      return;
     }
-    const formData = new FormData();
-    formData.append("file", file);
 
-    const uploadRes = await fetch("http://localhost:8000/api/v1/upload", {
-      method: "POST",
-      body: formData,
-    })
+    const uploadRes = await uploadTranscript(file);
+    // Add deleted property to each course
+    const transcripData = uploadRes.map(course => ({ ...course, deleted: false }));
+    setCourses(transcripData);
 
-    if (!uploadRes.ok) throw new Error(`Upload failed: ${uploadRes.status}`);
-
-
-    const transcripData = await uploadRes.json()
-    console.log(transcripData)
-    setCourses(transcripData)
-
-    const gpaRes = await fetch("http://localhost:8000/api/v1/gpa", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ courses: transcripData }),
-
-    })
-    const gpaData = await gpaRes.json();
-    setGpa(gpaData)
+    const gpaData = await fetchGPA(transcripData.filter(c => !c.deleted));
+    setGpa(gpaData);
     console.log("GPA Success:", gpaData);
+  };
 
-  }
+  // Mark course as deleted (greyed out)
+  const handleDelete = (index) => {
+    const updatedCourses = [];
+
+    for (let i = 0; i < courses.length; i++) {
+      const course = courses[i];
+      if (i === index) {
+        updatedCourses.push({ ...course, deleted: true });
+      } else {
+        updatedCourses.push(course);
+      }
+    }
+    setCourses(updatedCourses);
+
+    // Recalculate GPA excluding deleted courses
+    const activeCourses = updatedCourses.filter(c => !c.deleted);
+    fetchGPA(activeCourses).then(gpaData => setGpa(gpaData));
+  };
 
   return (
     <>
-      <div>
-        <h1>USF</h1>
+      <div className='container'>
+        <header>
+          <h1>USF</h1>
+        </header>
+        <p>To get your academic transcript: Go to your myUSF, press Academic Transcript under Records. Once
+          you are there hit the keyboard shortcut Command+P on a Mac or Ctrl+P on Windows and save as a .pdf
+        </p>
         <input type="file" onChange={handleFileChange} className="transcriptFile" />
         <input type='button' value="Submit" onClick={handleUpload} />
       </div>
@@ -60,19 +88,21 @@ function App() {
       <div>
         <ul>
           {courses.map((course, index) => (
-            <li key={index}>
+            <li
+              key={index}
+              style={{ color: course.deleted ? 'grey' : 'black', textDecoration: course.deleted ? 'line-through' : 'none' }}
+            >
               {course.subject} {course.number} - {course.title}: {course.grade} ({course.units} units)
+              {!course.deleted && <button onClick={() => handleDelete(index)}>Delete</button>}
             </li>
           ))}
         </ul>
-        <text>Your GPA is {gpa}</text>
+        <p>Your GPA is {gpa}</p>
       </div>
 
       <input type='button' value="Add Course" />
-
-
     </>
   )
 }
 
-export default App
+export default App;
