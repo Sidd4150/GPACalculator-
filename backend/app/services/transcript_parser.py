@@ -6,10 +6,9 @@ import re
 from pathlib import Path
 
 import pypdf
-
 from app.constants import (
     COURSE_SOURCES,
-    MAX_COURSE_TITLE_PARSE_LENGTH,
+    MAX_COURSE_TITLE_LENGTH,
     MIN_PARSING_QUALITY_RATIO,
     MIN_SECTION_TEXT_LENGTH,
     PARSING_ARTIFACTS,
@@ -372,8 +371,8 @@ class TranscriptParser:
         clean_title = re.sub(r"\s+", " ", clean_title).strip()
 
         # Truncate overly long titles (likely parsing errors)
-        if len(clean_title) > MAX_COURSE_TITLE_PARSE_LENGTH:
-            clean_title = clean_title[:MAX_COURSE_TITLE_PARSE_LENGTH].strip()
+        if len(clean_title) > MAX_COURSE_TITLE_LENGTH:
+            clean_title = clean_title[:MAX_COURSE_TITLE_LENGTH].strip()
 
         return clean_title
 
