@@ -96,20 +96,7 @@ PARSING_ARTIFACTS = [
     r"Subject.*$",
 ]
 
-# Exception to HTTP mapping: exception_type -> (status_code, message_template)
-EXCEPTION_HTTP_MAP = {
-    # Application exceptions
-    "ValidationError": (400, "Invalid input data: {message}"),
-    "FileError": (400, "File processing error: {message}"),
-    "ParsingError": (400, "Unable to parse transcript: {message}"),
-    "CalculationError": (400, "GPA calculation failed: {message}"),
-    # Standard exceptions
-    "FileNotFoundError": (
-        400,
-        "File not found. Please ensure it's a valid transcript.",
-    ),
-    "PydanticValidationError": (422, "Invalid request format: {message}"),
-    "ValueError": (400, "Invalid input: {message}"),
-    # Generic fallback
-    "Exception": (500, "Internal server error"),
-}
+# Parser validation constants
+MAX_COURSE_TITLE_PARSE_LENGTH = 100
+MIN_PARSING_QUALITY_RATIO = 0.8
+MIN_SECTION_TEXT_LENGTH = 100

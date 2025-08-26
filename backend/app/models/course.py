@@ -5,7 +5,6 @@ Pydantic models for course data.
 import re
 from typing import Literal
 from pydantic import BaseModel, Field, field_validator
-from app.constants import COURSE_SOURCES
 
 
 class CourseRow(BaseModel):

@@ -7,16 +7,18 @@ import tempfile
 from functools import lru_cache
 from typing import Any, Dict, List, Optional
 
-from app.config import Settings, get_settings
-from app.models.course import CourseRow
-from app.services.file_validator import FileValidator
-from app.services.gpa_calculator import GPACalculator
-from app.services.parser import TranscriptParser
-from app.utils.exception_handler import map_exception_to_http
-from app.utils.logger import setup_logger
-from fastapi import APIRouter, Depends, File, Request, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from pydantic import BaseModel
 from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+from app.config import Settings, get_settings
+from app.exceptions import TranscriptParsingError
+from app.models.course import CourseRow
+from app.utils.file_validator import FileValidator
+from app.services.gpa_calculator import GPACalculator
+from app.services.parser import TranscriptParser
+from app.utils.logger import setup_logger
 
 logger = setup_logger("api")
 
@@ -49,8 +51,6 @@ def get_rate_limiter_key(request: Request) -> Optional[str]:
     """Get rate limiter key, but skip in test environment."""
     if os.getenv("TESTING", "false").lower() == "true":
         return None  # No rate limiting during tests
-    from slowapi.util import get_remote_address
-
     return get_remote_address(request)
 
 
@@ -119,9 +119,38 @@ async def upload_transcript(
         )
         return courses_dict
 
+    except ValueError as e:
+        logger.error("Validation error processing transcript %s: %s", file.filename, e)
+        # Check if it's a file size error for special status code
+        if "size" in str(e).lower():
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail=str(e)
+            ) from e
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from e
+    except FileNotFoundError as e:
+        logger.error("File not found error: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="File not found"
+        ) from e
+    except OSError as e:
+        logger.error("File I/O error processing transcript %s: %s", file.filename, e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Error reading file"
+        ) from e
+    except TranscriptParsingError as e:
+        logger.error("Parsing error for transcript %s: %s", file.filename, e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unable to parse transcript: {str(e)}",
+        ) from e
     except Exception as e:
-        logger.error("Failed to process transcript %s: %s", file.filename, e)
-        raise map_exception_to_http(e) from e
+        logger.error("Unexpected error processing transcript %s: %s", file.filename, e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error",
+        ) from e
 
 
 @router.post("/gpa")
@@ -151,9 +180,17 @@ def calculate_gpa(
 
         return gpa
 
+    except ValueError as e:
+        logger.error("GPA calculation error: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from e
     except Exception as e:
-        logger.error("Failed to calculate GPA: %s", e)
-        raise map_exception_to_http(e) from e
+        logger.error("Unexpected error calculating GPA: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error",
+        ) from e
 
 
 @router.get("/health")

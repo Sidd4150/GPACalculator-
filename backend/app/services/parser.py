@@ -8,8 +8,14 @@ from pathlib import Path
 
 import pypdf
 from app.models.course import CourseRow
-from app.exceptions import FileError, ParsingError
-from app.constants import PARSING_ARTIFACTS, COURSE_SOURCES
+from app.exceptions import TranscriptParsingError
+from app.constants import (
+    PARSING_ARTIFACTS,
+    COURSE_SOURCES,
+    MAX_COURSE_TITLE_PARSE_LENGTH,
+    MIN_PARSING_QUALITY_RATIO,
+    MIN_SECTION_TEXT_LENGTH,
+)
 from app.utils.logger import setup_logger
 
 logger = setup_logger("parser")
@@ -69,12 +75,12 @@ class TranscriptParser:
                 # Check if PDF is encrypted
                 if pdf_reader.is_encrypted:
                     logger.error("PDF file is encrypted")
-                    raise FileError("PDF file is encrypted and cannot be read")
+                    raise ValueError("PDF file is encrypted and cannot be read")
 
                 # Check if PDF has pages
                 if len(pdf_reader.pages) == 0:
                     logger.error("PDF file has no pages")
-                    raise FileError("PDF file contains no pages")
+                    raise ValueError("PDF file contains no pages")
 
                 for page_num, page in enumerate(pdf_reader.pages):
                     try:
@@ -93,15 +99,15 @@ class TranscriptParser:
 
         except pypdf.errors.PdfReadError as e:
             logger.error("PDF read error: %s", e)
-            raise FileError(f"PDF file is corrupted or invalid: {str(e)}") from e
+            raise ValueError(f"PDF file is corrupted or invalid: {str(e)}") from e
         except (OSError, IOError) as e:
             logger.error("Error reading PDF file: %s", e)
-            raise FileError(f"Error reading PDF file: {str(e)}") from e
+            raise OSError(f"Error reading PDF file: {str(e)}") from e
 
         # Validate extracted text
         if not text.strip():
             logger.error("No text extracted from PDF")
-            raise ParsingError("No text could be extracted from the PDF file")
+            raise TranscriptParsingError("No text could be extracted from the PDF file")
 
         # Basic transcript validation
         if "TRANSCRIPT" not in text.upper() and "ACADEMIC" not in text.upper():
@@ -366,47 +372,37 @@ class TranscriptParser:
         clean_title = re.sub(r"\s+", " ", clean_title).strip()
 
         # Truncate overly long titles (likely parsing errors)
-        if len(clean_title) > 100:
-            clean_title = clean_title[:100].strip()
+        if len(clean_title) > MAX_COURSE_TITLE_PARSE_LENGTH:
+            clean_title = clean_title[:MAX_COURSE_TITLE_PARSE_LENGTH].strip()
 
         return clean_title
 
-    def _validate_parsing_results(
-        self, courses: List[CourseRow], text: str, sections: Dict[str, str]
-    ) -> None:
+    def _validate_parsing_results(self, courses: List[CourseRow]) -> None:
         """
-        Validate parsing results and raise ParsingError if quality is too low.
+        Validate parsing results and raise TranscriptParsingError if quality is too low.
 
         Args:
             courses: List of parsed courses
-            text: Original transcript text
-            sections: Identified transcript sections
 
         Raises:
-            ParsingError: If no courses found or parsing quality is too low
+            TranscriptParsingError: If no courses found or parsing quality is too low
         """
         if not courses:
             logger.error("No courses found in transcript")
-            raise ParsingError(
-                "No courses were found in the transcript",
-                f"Sections found: {list(sections.keys())}, Total text length: {len(text)}",
-            )
+            raise TranscriptParsingError("No courses were found in the transcript")
 
         # Validate course quality - at least 80% should be complete
         valid_courses = [c for c in courses if c.subject and c.number and c.title]
 
         quality_ratio = len(valid_courses) / len(courses)
-        if quality_ratio < 0.8:
+        if quality_ratio < MIN_PARSING_QUALITY_RATIO:
             logger.warning(
                 "Low quality parsing: %d/%d courses are valid (%.1f%%)",
                 len(valid_courses),
                 len(courses),
                 quality_ratio * 100,
             )
-            raise ParsingError(
-                "Transcript format may not be supported",
-                f"Only {len(valid_courses)} out of {len(courses)} courses parsed successfully",
-            )
+            raise TranscriptParsingError("Transcript format may not be supported")
 
     def parse_transcript(self, pdf_path: str) -> List[CourseRow]:
         """
@@ -433,7 +429,7 @@ class TranscriptParser:
 
             # Validate that we found expected sections
             total_section_length = sum(len(section) for section in sections.values())
-            if total_section_length < 100:  # Very basic validation
+            if total_section_length < MIN_SECTION_TEXT_LENGTH:  # Very basic validation
                 logger.warning("Transcript sections seem unusually short")
 
             all_courses = []
@@ -470,15 +466,15 @@ class TranscriptParser:
                 cleaned_courses = all_courses
 
             # Final validation and logging
-            self._validate_parsing_results(cleaned_courses, text, sections)
+            self._validate_parsing_results(cleaned_courses)
 
             logger.info(
                 "Successfully parsed %d courses from transcript", len(cleaned_courses)
             )
             return cleaned_courses
 
-        except (FileError, ParsingError, FileNotFoundError):
+        except (TranscriptParsingError, FileNotFoundError, ValueError, OSError):
             raise
         except Exception as e:
             logger.error("Unexpected error during transcript parsing: %s", e)
-            raise ParsingError(f"Failed to parse transcript: {str(e)}") from e
+            raise TranscriptParsingError(f"Failed to parse transcript: {str(e)}") from e

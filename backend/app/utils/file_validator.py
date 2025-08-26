@@ -4,6 +4,8 @@ File validation for the GPA Calculator application.
 
 from typing import Optional
 
+from fastapi import UploadFile
+
 from app.config import Settings
 from app.constants import (
     ERROR_MESSAGES,
@@ -11,9 +13,7 @@ from app.constants import (
     SUPPORTED_FILE_EXTENSIONS,
     SUPPORTED_MIME_TYPES,
 )
-from app.exceptions import FileError, ValidationError
 from app.utils.logger import setup_logger
-from fastapi import UploadFile
 
 logger = setup_logger("file_validator")
 
@@ -41,14 +41,11 @@ class FileValidator:
         """Validate filename is present and has correct extension."""
         if not filename:
             logger.warning("Upload attempt with no filename")
-            raise ValidationError(ERROR_MESSAGES["NO_FILE"])
+            raise ValueError(ERROR_MESSAGES["NO_FILE"])
 
         if not any(filename.lower().endswith(ext) for ext in SUPPORTED_FILE_EXTENSIONS):
             logger.warning("Invalid file extension: %s", filename)
-            raise FileError(
-                ERROR_MESSAGES["INVALID_FILE_TYPE"],
-                f"Supported extensions: {', '.join(SUPPORTED_FILE_EXTENSIONS)}",
-            )
+            raise ValueError(ERROR_MESSAGES["INVALID_FILE_TYPE"])
 
     def _validate_content_type(self, content_type: Optional[str]) -> None:
         """Validate MIME type if provided."""
@@ -56,22 +53,18 @@ class FileValidator:
             content_type.startswith(mime) for mime in SUPPORTED_MIME_TYPES
         ):
             logger.warning("Invalid content type: %s", content_type)
-            raise FileError(
-                ERROR_MESSAGES["INVALID_FILE_TYPE"],
-                f"Supported types: {', '.join(SUPPORTED_MIME_TYPES)}",
-            )
+            raise ValueError(ERROR_MESSAGES["INVALID_FILE_TYPE"])
 
     def _validate_file_size(self, size: int, filename: Optional[str] = None) -> None:
         """Validate file size is within limits."""
         if size == 0:
             logger.warning("Empty file uploaded: %s", filename)
-            raise ValidationError(ERROR_MESSAGES["EMPTY_FILE"])
+            raise ValueError(ERROR_MESSAGES["EMPTY_FILE"])
 
         if size > self.settings.max_file_size_bytes:
             logger.warning("File too large: %s bytes, file: %s", size, filename)
-            raise FileError(
-                f"{ERROR_MESSAGES['FILE_TOO_LARGE']} ({self.settings.max_file_size_mb}MB)",
-                f"File size: {size} bytes",
+            raise ValueError(
+                f"{ERROR_MESSAGES['FILE_TOO_LARGE']} ({self.settings.max_file_size_mb}MB)"
             )
 
     def _validate_pdf_content(
@@ -80,10 +73,7 @@ class FileValidator:
         """Validate PDF content structure."""
         if not content.startswith(PDF_HEADER_SIGNATURE):
             logger.warning("Invalid PDF header: %s", filename)
-            raise FileError(
-                ERROR_MESSAGES["CORRUPTED_PDF"],
-                f"Missing PDF signature in file: {filename}",
-            )
+            raise ValueError(ERROR_MESSAGES["CORRUPTED_PDF"])
 
 
 # Factory functions for dependency injection
