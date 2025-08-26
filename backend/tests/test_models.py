@@ -101,7 +101,7 @@ class TestCourseRow:
     # Subject validation tests
     def test_subject_validation_invalid_cases(self):
         """Test various invalid subject formats."""
-        invalid_subjects = ["cs", "C", "COMPSCI", "CS1", "CS-"]
+        invalid_subjects = ["cs", "C", "COMPS", "CS1", "CS-"]
 
         for invalid_subject in invalid_subjects:
             with pytest.raises(ValidationError) as exc_info:
@@ -113,7 +113,7 @@ class TestCourseRow:
                     grade="A",
                     source="manual",
                 )
-            assert "Subject must be 2-6 uppercase letters" in str(exc_info.value)
+            assert "Subject must be 2-4 uppercase letters" in str(exc_info.value)
 
     # Number validation tests
     def test_number_digits_only(self):
@@ -277,7 +277,7 @@ class TestCourseRow:
         valid_titles = [
             "Intro to Computer Science",
             "Intro to C++ & Data Structures",
-            "A" * 200,  # Long title
+            "A" * 30,  # Long title
         ]
         for title in valid_titles:
             course = Course(

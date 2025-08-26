@@ -7,6 +7,20 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
+from ..constants import (
+    COURSE_SOURCES,
+    COURSE_SUBJECT_PATTERN,
+    COURSE_NUMBER_PATTERN,
+    GRADE_POINTS,
+    NON_GPA_GRADES,
+    MIN_COURSE_SUBJECT_LENGTH,
+    MAX_COURSE_SUBJECT_LENGTH,
+    MIN_COURSE_UNITS,
+    MAX_COURSE_UNITS,
+    MIN_COURSE_TITLE_LENGTH,
+    MAX_COURSE_TITLE_LENGTH,
+)
+
 
 class Course(BaseModel):
     """
@@ -24,7 +38,9 @@ class Course(BaseModel):
     subject: str = Field(..., description="Course subject code")
     number: str = Field(..., description="Course number")
     title: str = Field(..., description="Course title")
-    units: float = Field(..., ge=0, description="Credit units (must be non-negative)")
+    units: float = Field(
+        ..., ge=MIN_COURSE_UNITS, le=MAX_COURSE_UNITS, description="Credit units"
+    )
     grade: str = Field(..., description="Letter grade or special code")
     source: Literal["parsed", "manual"] = Field(
         ..., description="Source of the course data"
@@ -34,15 +50,18 @@ class Course(BaseModel):
     @classmethod
     def validate_subject(cls, v: str) -> str:
         """Validate subject code format."""
-        if not re.match(r"^[A-Z]{2,6}$", v):
-            raise ValueError("Subject must be 2-6 uppercase letters")
+        if not re.match(COURSE_SUBJECT_PATTERN, v):
+            raise ValueError(
+                f"Subject must be {MIN_COURSE_SUBJECT_LENGTH}-{MAX_COURSE_SUBJECT_LENGTH} "
+                f"uppercase letters"
+            )
         return v
 
     @field_validator("number")
     @classmethod
     def validate_number(cls, v: str) -> str:
         """Validate course number format."""
-        if not re.match(r"^(\d+[A-Z]?|\d*XX)$", v):
+        if not re.match(COURSE_NUMBER_PATTERN, v):
             raise ValueError(
                 "Course number must be digits optionally followed by a single letter, or XX format"
             )
@@ -51,35 +70,35 @@ class Course(BaseModel):
     @field_validator("title")
     @classmethod
     def validate_title(cls, v: str) -> str:
-        """Validate course title is not empty."""
-        if not v.strip():
+        """Validate course title length."""
+        title = v.strip()
+        if len(title) < MIN_COURSE_TITLE_LENGTH:
             raise ValueError("Title cannot be empty")
-        return v
+        if len(title) > MAX_COURSE_TITLE_LENGTH:
+            raise ValueError(
+                f"Title cannot exceed {MAX_COURSE_TITLE_LENGTH} characters"
+            )
+        return title
 
     @field_validator("grade")
     @classmethod
     def validate_grade(cls, v: str) -> str:
         """Validate grade format."""
-        valid_letter_grades = {
-            "A+",
-            "A",
-            "A-",
-            "B+",
-            "B",
-            "B-",
-            "C+",
-            "C",
-            "C-",
-            "D+",
-            "D",
-            "D-",
-            "F",
-        }
-        valid_non_gpa_grades = {"P", "S", "U", "I", "IP", "W", "NR", "AU", "TCR", "NG"}
-        valid_grades = valid_letter_grades | valid_non_gpa_grades
+        valid_grades = set(GRADE_POINTS.keys()) | NON_GPA_GRADES
 
         if v not in valid_grades:
             raise ValueError(
                 f"Invalid grade: {v}. Valid grades are: {', '.join(sorted(valid_grades))}"
+            )
+        return v
+
+    @field_validator("source")
+    @classmethod
+    def validate_source(cls, v: str) -> str:
+        """Validate source matches allowed values."""
+        if v not in COURSE_SOURCES.values():
+            valid_sources = list(COURSE_SOURCES.values())
+            raise ValueError(
+                f"Invalid source: {v}. Valid sources are: {', '.join(valid_sources)}"
             )
         return v
