@@ -7,18 +7,17 @@ import tempfile
 from functools import lru_cache
 from typing import Any, Dict, List, Optional
 
+from app.config import Settings, get_settings
+from app.exceptions import TranscriptParsingError
+from app.models.course import Course
+from app.services.gpa_calculator import GPACalculator
+from app.services.parser import TranscriptParser
+from app.utils.file_validator import FileValidator
+from app.utils.logger import setup_logger
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from pydantic import BaseModel
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-
-from app.config import Settings, get_settings
-from app.exceptions import TranscriptParsingError
-from app.models.course import CourseRow
-from app.utils.file_validator import FileValidator
-from app.services.gpa_calculator import GPACalculator
-from app.services.parser import TranscriptParser
-from app.utils.logger import setup_logger
 
 logger = setup_logger("api")
 
@@ -62,7 +61,7 @@ router = APIRouter()
 class CoursesRequest(BaseModel):
     """Request model for GPA calculation."""
 
-    courses: List[CourseRow]
+    courses: List[Course]
 
 
 @router.post("/upload")

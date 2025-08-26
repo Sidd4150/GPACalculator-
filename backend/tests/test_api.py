@@ -283,7 +283,7 @@ class TestAPIEndpoints:
         """Test /gpa endpoint with non-JSON payload."""
         response = self.client.post(
             "/api/v1/gpa",
-            data="not json data",
+            content="not json data",
             headers={"content-type": "application/json"},
         )
 

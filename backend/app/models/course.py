@@ -4,10 +4,11 @@ Pydantic models for course data.
 
 import re
 from typing import Literal
+
 from pydantic import BaseModel, Field, field_validator
 
 
-class CourseRow(BaseModel):
+class Course(BaseModel):
     """
     Model representing a single course from a USF transcript.
 

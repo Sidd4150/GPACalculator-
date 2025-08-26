@@ -3,8 +3,8 @@ Tests for Pydantic models.
 """
 
 import pytest
+from app.models.course import Course
 from pydantic import ValidationError
-from app.models.course import CourseRow
 
 
 class TestCourseRow:
@@ -13,7 +13,7 @@ class TestCourseRow:
     def test_source_field_validation(self):
         """Test source field validation."""
         # Valid sources
-        course_parsed = CourseRow(
+        course_parsed = Course(
             subject="CS",
             number="101",
             title="Test",
@@ -23,7 +23,7 @@ class TestCourseRow:
         )
         assert course_parsed.source == "parsed"
 
-        course_manual = CourseRow(
+        course_manual = Course(
             subject="CS",
             number="101",
             title="Test",
@@ -35,7 +35,7 @@ class TestCourseRow:
 
         # Invalid source
         with pytest.raises(ValidationError) as exc_info:
-            CourseRow(
+            Course(
                 subject="CS",
                 number="101",
                 title="Test",
@@ -47,7 +47,7 @@ class TestCourseRow:
 
     def test_valid_course_row(self):
         """Test creating a valid CourseRow instance."""
-        course = CourseRow(
+        course = Course(
             subject="CS",
             number="101",
             title="Intro to Computer Science",
@@ -64,7 +64,7 @@ class TestCourseRow:
 
     def test_valid_course_with_letter_suffix(self):
         """Test course number with trailing letter."""
-        course = CourseRow(
+        course = Course(
             subject="ENG",
             number="101L",
             title="English Lab",
@@ -76,7 +76,7 @@ class TestCourseRow:
 
     def test_valid_transfer_credit(self):
         """Test transfer credit with TCR grade."""
-        course = CourseRow(
+        course = Course(
             subject="MATH",
             number="201",
             title="Calculus I",
@@ -88,7 +88,7 @@ class TestCourseRow:
 
     def test_valid_courses_in_progress(self):
         """Test course in progress with IP grade."""
-        course = CourseRow(
+        course = Course(
             subject="PHY",
             number="205",
             title="Physics II",
@@ -105,7 +105,7 @@ class TestCourseRow:
 
         for invalid_subject in invalid_subjects:
             with pytest.raises(ValidationError) as exc_info:
-                CourseRow(
+                Course(
                     subject=invalid_subject,
                     number="101",
                     title="Test",
@@ -118,7 +118,7 @@ class TestCourseRow:
     # Number validation tests
     def test_number_digits_only(self):
         """Test course number with digits only."""
-        course = CourseRow(
+        course = Course(
             subject="CS",
             number="4950",
             title="Senior Project",
@@ -130,7 +130,7 @@ class TestCourseRow:
 
     def test_number_with_single_letter(self):
         """Test course number with single trailing letter."""
-        course = CourseRow(
+        course = Course(
             subject="BIO",
             number="101L",
             title="Biology Lab",
@@ -142,7 +142,7 @@ class TestCourseRow:
 
     def test_number_xx_format(self):
         """Test XX course number format."""
-        course = CourseRow(
+        course = Course(
             subject="CS",
             number="4XX",
             title="Test Course",
@@ -152,7 +152,7 @@ class TestCourseRow:
         )
         assert course.number == "4XX"
 
-        course = CourseRow(
+        course = Course(
             subject="HIST",
             number="1XX",
             title="Test Course",
@@ -168,7 +168,7 @@ class TestCourseRow:
 
         for invalid_number in invalid_numbers:
             with pytest.raises(ValidationError) as exc_info:
-                CourseRow(
+                Course(
                     subject="CS",
                     number=invalid_number,
                     title="Test",
@@ -187,7 +187,7 @@ class TestCourseRow:
         # Valid units
         valid_units = [0, 1, 3.0, 3.5, 4]
         for units in valid_units:
-            course = CourseRow(
+            course = Course(
                 subject="CS",
                 number="101",
                 title="Test",
@@ -199,7 +199,7 @@ class TestCourseRow:
 
         # Invalid units
         with pytest.raises(ValidationError) as exc_info:
-            CourseRow(
+            Course(
                 subject="CS",
                 number="101",
                 title="Test",
@@ -229,7 +229,7 @@ class TestCourseRow:
         ]
 
         for grade in valid_grades:
-            course = CourseRow(
+            course = Course(
                 subject="CS",
                 number="101",
                 title="Test",
@@ -244,7 +244,7 @@ class TestCourseRow:
         valid_non_gpa = ["P", "S", "U", "I", "IP", "W", "NR", "AU", "TCR", "NG"]
 
         for grade in valid_non_gpa:
-            course = CourseRow(
+            course = Course(
                 subject="CS",
                 number="101",
                 title="Test",
@@ -260,7 +260,7 @@ class TestCourseRow:
 
         for invalid_grade in invalid_grades:
             with pytest.raises(ValidationError) as exc_info:
-                CourseRow(
+                Course(
                     subject="CS",
                     number="101",
                     title="Test",
@@ -280,7 +280,7 @@ class TestCourseRow:
             "A" * 200,  # Long title
         ]
         for title in valid_titles:
-            course = CourseRow(
+            course = Course(
                 subject="CS",
                 number="101",
                 title=title,
@@ -294,7 +294,7 @@ class TestCourseRow:
         invalid_titles = ["", "   "]
         for invalid_title in invalid_titles:
             with pytest.raises(ValidationError) as exc_info:
-                CourseRow(
+                Course(
                     subject="CS",
                     number="101",
                     title=invalid_title,
@@ -307,7 +307,7 @@ class TestCourseRow:
     # Edge cases and combinations
     def test_course_row_serialization(self):
         """Test that CourseRow can be serialized to dict."""
-        course = CourseRow(
+        course = Course(
             subject="CS",
             number="101L",
             title="Computer Science Lab",
@@ -338,7 +338,7 @@ class TestCourseRow:
             "source": "manual",
         }
 
-        course = CourseRow(**data)
+        course = Course(**data)
         assert course.subject == "MATH"
         assert course.number == "201"
         assert course.grade == "B+"

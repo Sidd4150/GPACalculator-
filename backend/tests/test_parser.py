@@ -5,8 +5,7 @@ Tests for PDF transcript parser.
 from pathlib import Path
 
 import pytest
-
-from app.models.course import CourseRow
+from app.models.course import Course
 from app.services.parser import TranscriptParser
 
 
@@ -259,7 +258,7 @@ class TestTranscriptParser:
         # Verify all courses are valid CourseRow instances
         for course in courses:
             assert isinstance(
-                course, CourseRow
+                course, Course
             ), "All parsed items should be CourseRow instances"
             assert course.subject, "All courses should have subject"
             assert course.number, "All courses should have number"

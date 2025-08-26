@@ -3,19 +3,19 @@ PDF transcript parser for USF transcripts.
 """
 
 import re
-from typing import List, Dict, Optional
 from pathlib import Path
+from typing import Dict, List, Optional
 
 import pypdf
-from app.models.course import CourseRow
-from app.exceptions import TranscriptParsingError
 from app.constants import (
-    PARSING_ARTIFACTS,
     COURSE_SOURCES,
     MAX_COURSE_TITLE_PARSE_LENGTH,
     MIN_PARSING_QUALITY_RATIO,
     MIN_SECTION_TEXT_LENGTH,
+    PARSING_ARTIFACTS,
 )
+from app.exceptions import TranscriptParsingError
+from app.models.course import Course
 from app.utils.logger import setup_logger
 
 logger = setup_logger("parser")
@@ -211,7 +211,7 @@ class TranscriptParser:
 
     def parse_section_courses(
         self, section_text: str, section_name: str
-    ) -> List[CourseRow]:
+    ) -> List[Course]:
         """
         Parse all courses from a transcript section.
 
@@ -236,7 +236,7 @@ class TranscriptParser:
 
         return courses
 
-    def _parse_completed_courses(self, text: str) -> List[CourseRow]:
+    def _parse_completed_courses(self, text: str) -> List[Course]:
         """
         Parse completed courses with grades from preprocessed text.
 
@@ -263,7 +263,7 @@ class TranscriptParser:
 
         return courses
 
-    def _parse_progress_courses(self, text: str) -> List[CourseRow]:
+    def _parse_progress_courses(self, text: str) -> List[Course]:
         """
         Parse courses in progress (no final grade) from section text.
 
@@ -288,7 +288,7 @@ class TranscriptParser:
 
     def _create_course_row(
         self, subject: str, number: str, title: str, grade: str, units: str
-    ) -> Optional[CourseRow]:
+    ) -> Optional[Course]:
         """
         Create a CourseRow object with validation.
 
@@ -303,7 +303,7 @@ class TranscriptParser:
             CourseRow object or None if creation fails
         """
         try:
-            return CourseRow(
+            return Course(
                 subject=subject,
                 number=number,
                 title=title,
@@ -314,7 +314,7 @@ class TranscriptParser:
         except (ValueError, TypeError, AttributeError):
             return None
 
-    def _clean_and_enhance_courses(self, courses: List[CourseRow]) -> List[CourseRow]:
+    def _clean_and_enhance_courses(self, courses: List[Course]) -> List[Course]:
         """
         Clean and enhance parsed courses with specific USF transcript rules.
 
@@ -335,7 +335,7 @@ class TranscriptParser:
 
             # Create cleaned course - preserve the original source
             try:
-                cleaned_course = CourseRow(
+                cleaned_course = Course(
                     subject=course.subject,
                     number=course.number,
                     title=clean_title,
@@ -377,7 +377,7 @@ class TranscriptParser:
 
         return clean_title
 
-    def _validate_parsing_results(self, courses: List[CourseRow]) -> None:
+    def _validate_parsing_results(self, courses: List[Course]) -> None:
         """
         Validate parsing results and raise TranscriptParsingError if quality is too low.
 
@@ -404,7 +404,7 @@ class TranscriptParser:
             )
             raise TranscriptParsingError("Transcript format may not be supported")
 
-    def parse_transcript(self, pdf_path: str) -> List[CourseRow]:
+    def parse_transcript(self, pdf_path: str) -> List[Course]:
         """
         Parse complete transcript PDF and return all courses.
 
