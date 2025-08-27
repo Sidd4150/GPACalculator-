@@ -23,6 +23,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     """Handle application lifespan events."""
     # Startup
     logger.info("GPA Calculator API starting up")
+    logger.info(f"CORS origins configured: {settings.cors_origins_list}")
     yield
     # Shutdown
     logger.info("GPA Calculator API shutting down")
@@ -43,6 +44,8 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
+
+logger.info(f"CORS middleware configured with origins: {settings.cors_origins_list}")
 
 # Add rate limiting setup
 app.state.limiter = limiter
