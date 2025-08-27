@@ -46,15 +46,15 @@ def get_file_validator() -> FileValidator:
     return FileValidator(get_cached_settings())
 
 
-# Initialize rate limiter - disable in test environment
-def get_rate_limiter_key(request: Request) -> str:
-    """Get rate limiter key, but skip in test environment."""
+# Initialize rate limiter
+limiter = Limiter(key_func=get_remote_address)
+
+# Helper to conditionally apply rate limiting
+def apply_rate_limit(rate: str):
+    """Apply rate limiting only when not testing."""
     if os.getenv("TESTING", "false").lower() == "true":
-        return "test-client"  # Use fixed key for tests
-    return get_remote_address(request)
-
-
-limiter = Limiter(key_func=get_rate_limiter_key)
+        return lambda func: func  # No-op decorator
+    return limiter.limit(rate)
 
 router = APIRouter()
 
@@ -66,7 +66,7 @@ class CoursesRequest(BaseModel):
 
 
 @router.post("/upload")
-@limiter.limit(f"{get_cached_settings().rate_limit_upload}/minute")
+@apply_rate_limit(f"{get_cached_settings().rate_limit_upload}/minute")
 async def upload_transcript(
     request: Request,
     file: UploadFile = File(...),
@@ -154,7 +154,7 @@ async def upload_transcript(
 
 
 @router.post("/gpa")
-@limiter.limit(f"{get_cached_settings().rate_limit_gpa}/minute")
+@apply_rate_limit(f"{get_cached_settings().rate_limit_gpa}/minute")
 def calculate_gpa(
     request: Request,
     gpa_request: CoursesRequest,
