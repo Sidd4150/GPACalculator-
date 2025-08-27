@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 import pypdf
+
 from app.constants import COURSE_SOURCES, MAX_COURSE_TITLE_LENGTH, PARSING_ARTIFACTS
 from app.exceptions import TranscriptParsingError
 from app.models.course import Course
@@ -24,7 +25,7 @@ class TranscriptParser:
     - COURSES IN PROGRESS
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the parser with unified regex pattern for course parsing."""
         # Unified pattern handles both completed and in-progress courses
         # Completed: SUBJECT NUMBER [UG] TITLE GRADE UNITS QUALITY_POINTS
@@ -190,7 +191,7 @@ class TranscriptParser:
                     title=title,
                     units=float(units),
                     grade=grade,
-                    source=COURSE_SOURCES["PARSED"],
+                    source="parsed",
                 )
                 courses.append(course)
             except ValueError as e:

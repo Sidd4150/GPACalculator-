@@ -3,8 +3,9 @@ FastAPI application entry point.
 """
 
 from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -18,7 +19,7 @@ settings = get_settings()
 
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI):
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     """Handle application lifespan events."""
     # Startup
     logger.info("GPA Calculator API starting up")

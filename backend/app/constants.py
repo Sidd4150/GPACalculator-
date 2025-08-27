@@ -95,4 +95,3 @@ PARSING_ARTIFACTS = [
     r"Academic Standing:.*$",
     r"Subject.*$",
 ]
-

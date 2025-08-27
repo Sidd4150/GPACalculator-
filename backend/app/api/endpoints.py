@@ -47,10 +47,10 @@ def get_file_validator() -> FileValidator:
 
 
 # Initialize rate limiter - disable in test environment
-def get_rate_limiter_key(request: Request) -> str | None:
+def get_rate_limiter_key(request: Request) -> str:
     """Get rate limiter key, but skip in test environment."""
     if os.getenv("TESTING", "false").lower() == "true":
-        return None  # No rate limiting during tests
+        return "test-client"  # Use fixed key for tests
     return get_remote_address(request)
 
 

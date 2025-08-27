@@ -1,0 +1,31 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: pip install -r backend/requirements.txt
+    
+    - name: Run tests
+      run: cd backend && pytest -v
+    
+    - name: Check code style
+      run: |
+        cd backend && ruff format --check
+        cd backend && ruff check
+        cd backend && mypy app/
