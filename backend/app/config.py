@@ -2,8 +2,6 @@
 Simple configuration for the GPA Calculator application.
 """
 
-import os
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -47,11 +45,6 @@ class Settings(BaseSettings):
                 if origin.strip()
             ]
         return list(self.cors_origins) if self.cors_origins else []
-
-    @property
-    def is_testing(self) -> bool:
-        """Check if running in test mode."""
-        return os.getenv("TESTING", "false").lower() == "true"
 
     model_config = SettingsConfigDict(
         case_sensitive=False,

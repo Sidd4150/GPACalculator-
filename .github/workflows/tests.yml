@@ -23,8 +23,6 @@ jobs:
     
     - name: Run tests
       run: cd backend && pytest -v
-      env:
-        TESTING: "true"
     
     - name: Format and check code style
       run: |

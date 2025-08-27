@@ -49,13 +49,6 @@ def get_file_validator() -> FileValidator:
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
 
-# Helper to conditionally apply rate limiting
-def apply_rate_limit(rate: str):
-    """Apply rate limiting only when not testing."""
-    if os.getenv("TESTING", "false").lower() == "true":
-        return lambda func: func  # No-op decorator
-    return limiter.limit(rate)
-
 router = APIRouter()
 
 
@@ -66,7 +59,7 @@ class CoursesRequest(BaseModel):
 
 
 @router.post("/upload")
-@apply_rate_limit(f"{get_cached_settings().rate_limit_upload}/minute")
+@limiter.limit(f"{get_cached_settings().rate_limit_upload}/minute")
 async def upload_transcript(
     request: Request,
     file: UploadFile = File(...),
@@ -154,7 +147,7 @@ async def upload_transcript(
 
 
 @router.post("/gpa")
-@apply_rate_limit(f"{get_cached_settings().rate_limit_gpa}/minute")
+@limiter.limit(f"{get_cached_settings().rate_limit_gpa}/minute")
 def calculate_gpa(
     request: Request,
     gpa_request: CoursesRequest,
