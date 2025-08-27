@@ -78,7 +78,7 @@ tmp/
 backend/logs/
 backend/__pycache__/
 *.pdf
-!backend/Academic\ Transcript.pdf
+!backend/tests/fixtures/transcripts/Academic\ Transcript.pdf
 
 # Render
 .render/
