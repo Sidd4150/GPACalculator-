@@ -22,9 +22,9 @@ class Settings(BaseSettings):
     ]
     max_file_size_mb: int = 50
 
-    # Server settings (hardcoded - same across environments)
+    # Server settings
     host: str = "0.0.0.0"  # Always bind to all interfaces
-    port: int = 8000  # Default port for local development
+    port: int = 8000  # Default for local, Render sets PORT env var
 
     # Rate limiting settings (hardcoded - same across environments)
     rate_limit_upload: int = 10  # requests per minute
@@ -48,8 +48,6 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(
         case_sensitive=False,
-        env_file=".env",
-        env_file_encoding="utf-8",
     )
 
 

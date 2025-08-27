@@ -23,7 +23,6 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     """Handle application lifespan events."""
     # Startup
     logger.info("GPA Calculator API starting up")
-    logger.info(f"CORS origins configured: {settings.cors_origins_list}")
     yield
     # Shutdown
     logger.info("GPA Calculator API shutting down")
@@ -45,8 +44,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-logger.info(f"CORS middleware configured with origins: {settings.cors_origins_list}")
-
 # Add rate limiting setup
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
@@ -59,10 +56,6 @@ app.include_router(router, prefix="/api/v1")
 
 
 if __name__ == "__main__":
-    import os
-
     import uvicorn
 
-    # Use PORT from environment if set (production), otherwise use config default
-    port = int(os.getenv("PORT", str(settings.port)))
-    uvicorn.run(app, host=settings.host, port=port)
+    uvicorn.run(app, host=settings.host, port=settings.port)
