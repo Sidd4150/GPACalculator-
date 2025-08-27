@@ -71,6 +71,33 @@ function App() {
     fetchGPA(activeCourses).then(gpaData => setGpa(gpaData));
   };
 
+  const handleAdd = (index) => {
+    const updatedCourses = [];
+
+    for (let i = 0; i < courses.length; i++) {
+      const course = courses[i];
+      if (i === index) {
+        updatedCourses.push({ ...course, deleted: false });
+      } else {
+        updatedCourses.push(course);
+      }
+    }
+    setCourses(updatedCourses);
+
+    // Recalculate GPA excluding deleted courses
+    const activeCourses = updatedCourses.filter(c => !c.deleted);
+    fetchGPA(activeCourses).then(gpaData => setGpa(gpaData));
+  };
+
+  const handleNewCourse = () => {
+    const subject = prompt("Add name of subject");
+    const Cnum = prompt("Add name of Course number");
+    const className = prompt("Add class name");
+    const grade = prompt("Add Grade")
+    const units = prompt("Add number of units")
+
+  }
+
   return (
     <>
       <div className='container'>
@@ -94,13 +121,14 @@ function App() {
             >
               {course.subject} {course.number} - {course.title}: {course.grade} ({course.units} units)
               {!course.deleted && <button onClick={() => handleDelete(index)}>Delete</button>}
+              {course.deleted && <button onClick={() => handleAdd(index)}>Add</button>}
             </li>
           ))}
         </ul>
         <p>Your GPA is {gpa}</p>
       </div>
 
-      <input type='button' value="Add Course" />
+      <input type='button' value="Add Course" onClick={() => handleNewCourse()} />
     </>
   )
 }
