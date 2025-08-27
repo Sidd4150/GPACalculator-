@@ -26,6 +26,7 @@ jobs:
     
     - name: Format and check code style
       run: |
-        cd backend && ruff format
-        cd backend && ruff check
-        cd backend && mypy app/
+        cd backend
+        ruff format
+        ruff check
+        mypy app/
