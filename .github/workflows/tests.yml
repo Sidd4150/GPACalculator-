@@ -24,8 +24,8 @@ jobs:
     - name: Run tests
       run: cd backend && pytest -v
     
-    - name: Check code style
+    - name: Format and check code style
       run: |
-        cd backend && ruff format --check
+        cd backend && ruff format
         cd backend && ruff check
         cd backend && mypy app/

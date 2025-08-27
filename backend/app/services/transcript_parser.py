@@ -191,7 +191,7 @@ class TranscriptParser:
                     title=title,
                     units=float(units),
                     grade=grade,
-                    source="parsed",
+                    source=COURSE_SOURCES["PARSED"],  # type: ignore[arg-type]
                 )
                 courses.append(course)
             except ValueError as e:

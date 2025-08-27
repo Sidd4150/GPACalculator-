@@ -32,7 +32,7 @@ class GPACalculator:
         """
 
         if not isinstance(courses, list):
-            logger.error("Invalid input type for courses: %s", type(courses))
+            logger.error("Invalid input type for courses: %s", type(courses))  # type: ignore[unreachable]
             raise ValueError("Courses must be provided as a list")
 
         if not courses:

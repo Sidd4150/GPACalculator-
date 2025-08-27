@@ -68,7 +68,7 @@ class CoursesRequest(BaseModel):
 @router.post("/upload")
 @limiter.limit(f"{get_cached_settings().rate_limit_upload}/minute")
 async def upload_transcript(
-    request: Request,  # pylint: disable=unused-argument
+    request: Request,
     file: UploadFile = File(...),
     file_validator: FileValidator = Depends(get_file_validator),
     parser: TranscriptParser = Depends(get_transcript_parser),
@@ -156,7 +156,7 @@ async def upload_transcript(
 @router.post("/gpa")
 @limiter.limit(f"{get_cached_settings().rate_limit_gpa}/minute")
 def calculate_gpa(
-    request: Request,  # pylint: disable=unused-argument
+    request: Request,
     gpa_request: CoursesRequest,
     gpa_calculator: GPACalculator = Depends(get_gpa_calculator),
 ) -> float:
