@@ -67,6 +67,10 @@ li {
   margin: 0.5rem 0;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 /* GPA text */
@@ -75,4 +79,48 @@ p {
   font-size: 1.2rem;
   font-weight: bold;
   margin-top: 1rem;
+}
+
+/*Buttons */
+
+.deleteButton {
+  background-color: #e37a73b3;
+
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  margin-left: 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.editButton {
+  background-color: #c1bdbde8;
+
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  margin-left: 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+
+.addButton {
+  background-color: #7ab488e8;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  margin-left: 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+  /* space between buttons */
 }

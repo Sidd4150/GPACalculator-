@@ -1,36 +1,14 @@
 import './App.css'
 import { useState } from 'react'
+import { fetchGPA, uploadTranscript } from "./api_calls";
+import Header from './components'
 
 function App() {
+
   const [file, setFile] = useState(null);
   const [courses, setCourses] = useState([]);
   const [gpa, setGpa] = useState(null);
 
-  // Upload transcript file
-  const uploadTranscript = async (file) => {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const res = await fetch("https://gpacalculator-qm9d.onrender.com/api/v1/upload", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
-    return res.json(); // transcript data
-  };
-
-  // Calculate GPA
-  const fetchGPA = async (courses) => {
-    const res = await fetch("https://gpacalculator-qm9d.onrender.com/api/v1/gpa", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ courses }),
-    });
-
-    if (!res.ok) throw new Error(`GPA fetch failed: ${res.status}`);
-    return res.json(); // gpa value
-  };
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -111,10 +89,7 @@ function App() {
 
     const unitsInput = prompt("Add number of units");
     const units = parseFloat(unitsInput);
-    if (isNaN(units) || units <= 0) {
-      alert("Units must be a positive number!");
-      return;
-    }
+
 
     const newCourse = {
       subject,
@@ -141,12 +116,43 @@ function App() {
   };
 
 
+
+  const handleEdit = (index) => {
+    const courseToEdit = courses[index];
+
+    // Ask for new grade
+    const newGrade = prompt("Enter new grade:", courseToEdit.grade);
+    if (!newGrade) return;
+
+    // Ask for new units
+    const unitsInput = prompt("Enter new number of units:", courseToEdit.units);
+    const newUnits = parseFloat(unitsInput);
+    if (isNaN(newUnits) || newUnits <= 0) {
+      alert("Units must be a positive number!");
+      return;
+    }
+
+    // Update the course
+    const updatedCourses = [...courses];
+    updatedCourses[index] = {
+      ...courseToEdit,
+      grade: newGrade,
+      units: newUnits
+    };
+    setCourses(updatedCourses);
+
+    // Recalculate GPA for active courses
+    const activeCourses = updatedCourses
+      .filter(c => !c.deleted)
+      .map(({ deleted, ...rest }) => rest);
+    fetchGPA(activeCourses).then(setGpa);
+  };
+
+
   return (
     <>
       <div className='container'>
-        <header>
-          <h1>USF</h1>
-        </header>
+        <Header></Header>
         <p>To get your academic transcript: Go to your myUSF, press Academic Transcript under Records. Once
           you are there hit the keyboard shortcut Command+P on a Mac or Ctrl+P on Windows and save as a .pdf
         </p>
@@ -160,17 +166,23 @@ function App() {
           {courses.map((course, index) => (
             <li
               key={index}
-              style={{ color: course.deleted ? 'grey' : 'black', textDecoration: course.deleted ? 'line-through' : 'none' }}
             >
-              {course.subject} {course.number} - {course.title}: {course.grade} ({course.units} units )
-              {!course.deleted && <button onClick={() => handleDelete(index)}>Delete</button>}
-              {course.deleted && <button onClick={() => handleAdd(index)}>Add</button>}
-              {course.source === "manual" && <span>( MANUALLY ADDED)</span>}
+              <span style={{ color: course.deleted ? 'grey' : 'black', textDecoration: course.deleted ? 'line-through' : 'none' }}>
+                {course.subject} {course.number} - {course.title}: {course.grade} ({course.units} units )
+              </span>
+              <div className='button-group'>
+                {course.source === "manual" && <span>( MANUALLY ADDED)</span>}
+                <button className='editButton' onClick={() => handleEdit(index)} >Edit</button>
+                {!course.deleted && <button onClick={() => handleDelete(index)} className="deleteButton" >Delete</button>}
+                {course.deleted && <button onClick={() => handleAdd(index)} className="addButton">Add</button>}
+
+              </div>
+
             </li>
           ))}
         </ul>
         <p>Your GPA is {gpa}</p>
-      </div>
+      </div >
 
       <input type='button' value="Add Course" onClick={() => handleNewCourse()} />
     </>
