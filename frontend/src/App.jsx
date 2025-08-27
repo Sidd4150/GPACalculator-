@@ -11,7 +11,7 @@ function App() {
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch("http://localhost:8000/api/v1/upload", {
+    const res = await fetch("https://gpacalculator-qm9d.onrender.com/api/v1/upload", {
       method: "POST",
       body: formData,
     });
@@ -22,7 +22,7 @@ function App() {
 
   // Calculate GPA
   const fetchGPA = async (courses) => {
-    const res = await fetch("http://localhost:8000/api/v1/gpa", {
+    const res = await fetch("https://gpacalculator-qm9d.onrender.com/api/v1/gpa", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ courses }),
