@@ -11,7 +11,7 @@ function App() {
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch("http://localhost:8000/api/v1/upload", {
+    const res = await fetch("https://gpacalculator-qm9d.onrender.com/api/v1/upload", {
       method: "POST",
       body: formData,
     });
@@ -22,7 +22,7 @@ function App() {
 
   // Calculate GPA
   const fetchGPA = async (courses) => {
-    const res = await fetch("http://localhost:8000/api/v1/gpa", {
+    const res = await fetch("https://gpacalculator-qm9d.onrender.com/api/v1/gpa", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ courses }),
@@ -43,6 +43,7 @@ function App() {
     }
 
     const uploadRes = await uploadTranscript(file);
+    console.log(uploadRes)
     // Add deleted property to each course
     const transcripData = uploadRes.map(course => ({ ...course, deleted: false }));
     setCourses(transcripData);
@@ -59,7 +60,13 @@ function App() {
     for (let i = 0; i < courses.length; i++) {
       const course = courses[i];
       if (i === index) {
-        updatedCourses.push({ ...course, deleted: true });
+        if (course.source === "manual") {
+          // Skip adding manual course — completely remove
+          continue;
+        } else {
+          updatedCourses.push({ ...course, deleted: true });
+        }
+
       } else {
         updatedCourses.push(course);
       }
@@ -90,13 +97,49 @@ function App() {
   };
 
   const handleNewCourse = () => {
-    const subject = prompt("Add name of subject");
-    const Cnum = prompt("Add name of Course number");
-    const className = prompt("Add class name");
-    const grade = prompt("Add Grade")
-    const units = prompt("Add number of units")
+    const subject = prompt("Add subject");
+    if (!subject) return;
 
-  }
+    const number = prompt("Add course number");
+    if (!number) return;
+
+    const title = prompt("Add class title");
+    if (!title) return;
+
+    const grade = prompt("Add grade");
+    if (!grade) return;
+
+    const unitsInput = prompt("Add number of units");
+    const units = parseFloat(unitsInput);
+    if (isNaN(units) || units <= 0) {
+      alert("Units must be a positive number!");
+      return;
+    }
+
+    const newCourse = {
+      subject,
+      number,
+      title,
+      grade,
+      units,
+      source: "manual"
+    };
+
+    const updatedCourses = [];
+    for (let i = 0; i < courses.length; i++) {
+      updatedCourses.push(courses[i]);
+    }
+    updatedCourses.push(newCourse); // add the new course at the end
+
+    setCourses(updatedCourses);
+
+    // Recalculate GPA excluding deleted courses
+    const activeCourses = updatedCourses
+      .filter(c => !c.deleted)
+      .map(({ deleted, ...rest }) => rest); // strip frontend-only keys
+    fetchGPA(activeCourses).then(setGpa);
+  };
+
 
   return (
     <>
@@ -119,9 +162,10 @@ function App() {
               key={index}
               style={{ color: course.deleted ? 'grey' : 'black', textDecoration: course.deleted ? 'line-through' : 'none' }}
             >
-              {course.subject} {course.number} - {course.title}: {course.grade} ({course.units} units)
+              {course.subject} {course.number} - {course.title}: {course.grade} ({course.units} units )
               {!course.deleted && <button onClick={() => handleDelete(index)}>Delete</button>}
               {course.deleted && <button onClick={() => handleAdd(index)}>Add</button>}
+              {course.source === "manual" && <span>( MANUALLY ADDED)</span>}
             </li>
           ))}
         </ul>
