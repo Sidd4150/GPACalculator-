@@ -1,7 +1,9 @@
 import './App.css'
 import { useState } from 'react'
 import { fetchGPA, uploadTranscript } from "./api_calls";
-import Header from './components'
+import Header from './components/Header'
+import FileUploader from './components/FileUploader';
+import CourseEdit from './components/CourseEdit';
 
 function App() {
 
@@ -31,122 +33,7 @@ function App() {
     console.log("GPA Success:", gpaData);
   };
 
-  // Mark course as deleted (greyed out)
-  const handleDelete = (index) => {
-    const updatedCourses = [];
 
-    for (let i = 0; i < courses.length; i++) {
-      const course = courses[i];
-      if (i === index) {
-        if (course.source === "manual") {
-          // Skip adding manual course — completely remove
-          continue;
-        } else {
-          updatedCourses.push({ ...course, deleted: true });
-        }
-
-      } else {
-        updatedCourses.push(course);
-      }
-    }
-    setCourses(updatedCourses);
-
-    // Recalculate GPA excluding deleted courses
-    const activeCourses = updatedCourses.filter(c => !c.deleted);
-    fetchGPA(activeCourses).then(gpaData => setGpa(gpaData));
-  };
-
-  const handleAdd = (index) => {
-    const updatedCourses = [];
-
-    for (let i = 0; i < courses.length; i++) {
-      const course = courses[i];
-      if (i === index) {
-        updatedCourses.push({ ...course, deleted: false });
-      } else {
-        updatedCourses.push(course);
-      }
-    }
-    setCourses(updatedCourses);
-
-    // Recalculate GPA excluding deleted courses
-    const activeCourses = updatedCourses.filter(c => !c.deleted);
-    fetchGPA(activeCourses).then(gpaData => setGpa(gpaData));
-  };
-
-  const handleNewCourse = () => {
-    const subject = prompt("Add subject");
-    if (!subject) return;
-
-    const number = prompt("Add course number");
-    if (!number) return;
-
-    const title = prompt("Add class title");
-    if (!title) return;
-
-    const grade = prompt("Add grade");
-    if (!grade) return;
-
-    const unitsInput = prompt("Add number of units");
-    const units = parseFloat(unitsInput);
-
-
-    const newCourse = {
-      subject,
-      number,
-      title,
-      grade,
-      units,
-      source: "manual"
-    };
-
-    const updatedCourses = [];
-    for (let i = 0; i < courses.length; i++) {
-      updatedCourses.push(courses[i]);
-    }
-    updatedCourses.push(newCourse); // add the new course at the end
-
-    setCourses(updatedCourses);
-
-    // Recalculate GPA excluding deleted courses
-    const activeCourses = updatedCourses
-      .filter(c => !c.deleted)
-      .map(({ deleted, ...rest }) => rest); // strip frontend-only keys
-    fetchGPA(activeCourses).then(setGpa);
-  };
-
-
-
-  const handleEdit = (index) => {
-    const courseToEdit = courses[index];
-
-    // Ask for new grade
-    const newGrade = prompt("Enter new grade:", courseToEdit.grade);
-    if (!newGrade) return;
-
-    // Ask for new units
-    const unitsInput = prompt("Enter new number of units:", courseToEdit.units);
-    const newUnits = parseFloat(unitsInput);
-    if (isNaN(newUnits) || newUnits <= 0) {
-      alert("Units must be a positive number!");
-      return;
-    }
-
-    // Update the course
-    const updatedCourses = [...courses];
-    updatedCourses[index] = {
-      ...courseToEdit,
-      grade: newGrade,
-      units: newUnits
-    };
-    setCourses(updatedCourses);
-
-    // Recalculate GPA for active courses
-    const activeCourses = updatedCourses
-      .filter(c => !c.deleted)
-      .map(({ deleted, ...rest }) => rest);
-    fetchGPA(activeCourses).then(setGpa);
-  };
 
 
   return (
@@ -156,35 +43,19 @@ function App() {
         <p>To get your academic transcript: Go to your myUSF, press Academic Transcript under Records. Once
           you are there hit the keyboard shortcut Command+P on a Mac or Ctrl+P on Windows and save as a .pdf
         </p>
-        <input type="file" onChange={handleFileChange} className="transcriptFile" />
-        <input type='button' value="Submit" onClick={handleUpload} />
+        <FileUploader
+          handleFileChange={handleFileChange}
+          handleUpload={handleUpload}
+        />
       </div>
 
       <h1>Courses</h1>
-      <div>
-        <ul>
-          {courses.map((course, index) => (
-            <li
-              key={index}
-            >
-              <span style={{ color: course.deleted ? 'grey' : 'black', textDecoration: course.deleted ? 'line-through' : 'none' }}>
-                {course.subject} {course.number} - {course.title}: {course.grade} ({course.units} units )
-              </span>
-              <div className='button-group'>
-                {course.source === "manual" && <span>( MANUALLY ADDED)</span>}
-                <button className='editButton' onClick={() => handleEdit(index)} >Edit</button>
-                {!course.deleted && <button onClick={() => handleDelete(index)} className="deleteButton" >Delete</button>}
-                {course.deleted && <button onClick={() => handleAdd(index)} className="addButton">Add</button>}
-
-              </div>
-
-            </li>
-          ))}
-        </ul>
-        <p>Your GPA is {gpa}</p>
-      </div >
-
-      <input type='button' value="Add Course" onClick={() => handleNewCourse()} />
+      <CourseEdit
+        courses={courses}
+        setCourses={setCourses}
+        gpa={gpa}
+        setGpa={setGpa}
+      />
     </>
   )
 }
