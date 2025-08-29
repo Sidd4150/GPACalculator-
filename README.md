@@ -5,8 +5,8 @@ A FastAPI backend service for parsing USF transcript PDFs and calculating GPA, w
 ## 🏗️ Project Architecture
 
 - **Backend**: FastAPI (Python)
-- **Frontend**: React (separate developer)
-- **Deployment**: Render (backend) + Frontend hosting platform
+- **Frontend**: React 
+- **Deployment**: Render (backend) + Vercel (frontend)
 - **API Version**: v1
 
 ## 🚀 Getting to Production - Complete Guide
@@ -82,11 +82,11 @@ Push to `main` branch - Render will automatically build using the Dockerfile.
 
 ---
 
-### For Frontend Developer (Your Collaborator)
+### For Frontend Developer (sid)
 
 #### 1. Frontend Development Setup
 
-**Create your React application** using your preferred method (Create React App, Vite, Next.js, etc.).
+**Create your React application** 
 
 **Environment Configuration:**
 Create a `.env` file in your React project with:
